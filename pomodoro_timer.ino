@@ -27,9 +27,13 @@ int countdown_state = COUNTDOWN_OFF;
 // Other options
 #define DEBOUNCE_MS 5
 
-const int ACTIVE_SECS = 5;
-const int BREAK_SECS = 5 * 60;
+const int ACTIVE_SECS = 15;
+const int BREAK_SECS = 5;
+const int WARNING_SECS = 10;
 int timer_secs = 0;
+unsigned long last_draw_time = 0;
+int draw_timeout = 200;
+int current_dot = 0;
 
 Adafruit_7segment matrix = Adafruit_7segment();
 
@@ -69,24 +73,49 @@ void setup() {
   
 }
 
- void update_display(int remaining, int draw_colon = true) {
+bool should_draw(int remaining, int dot) {
+  // Determine if it should draw for blinking
 
-    // Extract the minutes remaining
-    int secs = remaining % 60;
-    int mins = (remaining - secs) / 60;
+  if (remaining > WARNING_SECS) {
+    return false;
+  }
 
-    // Write each character to the display
-    if ((mins / 10) > 0) {
-       matrix.writeDigitNum(0, (mins / 10));
+  int time_since = millis() - last_draw_time;
+
+  if (time_since > draw_timeout) {
+    current_dot = (current_dot + 1) % 4;
+    last_draw_time = millis();
+  }
+
+  return current_dot == dot;
+}
+
+void update_display(int remaining) {
+
+  //int draw_dots = should_draw(remaining);
+
+  // Extract the minutes remaining
+  int secs = remaining % 60;
+  int mins = (remaining - secs) / 60;
+
+  // Write each character to the display
+  if ((mins / 10) > 0) {
+     matrix.writeDigitNum(0, (mins / 10));
+  } else {
+    if (should_draw(remaining, 0)) {
+      matrix.writeDigitRaw(0, 0b10000000);
     } else {
       matrix.writeDigitRaw(0, 0);
     }
-    
-    matrix.writeDigitNum(1, (mins % 10));
-    matrix.drawColon(draw_colon);
-    matrix.writeDigitNum(3, (secs / 10));
-    matrix.writeDigitNum(4, (secs % 10));
-    matrix.writeDisplay();
+  }
+  
+  matrix.writeDigitNum(1, (mins % 10), should_draw(remaining, 1));
+  matrix.drawColon(true);
+  matrix.writeDigitNum(3, (secs / 10), should_draw(remaining, 2));
+  matrix.writeDigitNum(4, (secs % 10), should_draw(remaining, 3));
+  
+  matrix.writeDisplay();
+
 }
 
 
@@ -173,9 +202,6 @@ void loop() {
       if (current_state == STATE_ACTIVE) {
         // Go to break
 
-              Serial.println("timeout");
-
-
         timer_secs = BREAK_SECS;
         update_display(timer_secs);
         current_state = STATE_BREAK;
@@ -185,16 +211,14 @@ void loop() {
       }
       else if (current_state == STATE_BREAK) {
         // Go to active
-        timer_secs = BREAK_SECS;
+        timer_secs = ACTIVE_SECS;
         update_display(timer_secs);
-        current_state = STATE_BREAK;
+        current_state = STATE_ACTIVE;
         countdown_state = COUNTDOWN_READY;       
       }
     }
-  
 
-
-    delay(50);
+    delay(10);
   }
 }
 
