@@ -5,12 +5,15 @@
 #include <Wire.h>
 #include "Adafruit_LEDBackpack.h"
 #include <Bounce2.h>
+#include "pitches.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
 #define ACTIVE_PIN 4
 #define BREAK_PIN 3
 #define RESET_PIN 2
+#define SPEAKER_PIN 9
+
 
 // Logic states for application
 #define STATE_OFF -1
@@ -26,9 +29,10 @@ int countdown_state = COUNTDOWN_OFF;
 
 // Other options
 #define DEBOUNCE_MS 5
+#define MUSIC_SPEED 40 
 
-const int ACTIVE_SECS = 15;
-const int BREAK_SECS = 5;
+const int ACTIVE_SECS = 25 * 60;
+const int BREAK_SECS = 5 * 60;
 const int WARNING_SECS = 10;
 int timer_secs = 0;
 unsigned long last_draw_time = 0;
@@ -44,6 +48,30 @@ unsigned long remaining;
 Bounce active_pin_db = Bounce();
 Bounce break_pin_db = Bounce();
 Bounce reset_pin_db = Bounce();
+
+void play(int pin, int *notes, int *durations, int speed) {
+  // Play notes and durations at speed through pin
+
+  for (int i = 0; notes[i] != -1; i++) {
+    int note_duration = durations[i] * speed;
+    tone(pin, notes[i], note_duration * 0.95);
+    delay(note_duration);
+  }
+}
+
+void play_charge() {
+  int charge[] = {
+    NOTE_G4, NOTE_C5, NOTE_E5, NOTE_G5, NOTE_E5, NOTE_G5, END
+  };
+  int charged[] {
+    4, 4, 4, 6, 2, 16
+  };
+  
+  int *notes = charge;
+  int *durations = charged;
+  
+  play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
+}
 
 void setup() {
 
@@ -125,9 +153,6 @@ void clear_display() {
   matrix.writeDisplay();
 }
 
-
-
-
 void loop() {
 
   // Update the bouncers
@@ -198,6 +223,7 @@ void loop() {
     
     if (remaining <= 0) {
 
+      play_charge();
 
       if (current_state == STATE_ACTIVE) {
         // Go to break
