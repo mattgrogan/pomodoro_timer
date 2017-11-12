@@ -9,6 +9,7 @@
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
 #define PLAYPAUSE_PIN 2
+#define RESET_PIN 3
 
 // Logic states for application
 #define STATE_NULL -1
@@ -30,6 +31,7 @@ unsigned long elapsed;
 unsigned long remaining;
 
 Bounce playpause_debouncer = Bounce();
+Bounce reset_debouncer = Bounce();
 
 void setup() {
 
@@ -39,6 +41,11 @@ void setup() {
   pinMode(PLAYPAUSE_PIN, INPUT_PULLUP);
   playpause_debouncer.attach(PLAYPAUSE_PIN);
   playpause_debouncer.interval(DEBOUNCE_MS);
+
+  // Set up the reset button
+  pinMode(RESET_PIN, INPUT_PULLUP);
+  reset_debouncer.attach(RESET_PIN);
+  reset_debouncer.interval(DEBOUNCE_MS);
 
   Serial.begin(9600);
   
@@ -95,8 +102,15 @@ void loop() {
 
   // Update the bouncers
   playpause_debouncer.update();
+  reset_debouncer.update();
 
   int button_state = playpause_debouncer.rose();
+  int reset_btn_state = reset_debouncer.rose();
+
+  if (reset_btn_state) {
+    write_display(ACTIVE_SECS);
+    current_state = STATE_READY;   
+  }
 
   if (button_state == true) {
       Serial.println(button_state);
