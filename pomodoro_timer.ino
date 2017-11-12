@@ -33,11 +33,13 @@ int countdown_state = COUNTDOWN_OFF;
 
 const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
-const int WARNING_SECS = 10;
+const int WARNING_SECS = 2 * 60;
+
 int timer_secs = 0;
 unsigned long last_draw_time = 0;
 int draw_timeout = 200;
 int current_dot = 0;
+int fade = true;
 
 Adafruit_7segment matrix = Adafruit_7segment();
 
@@ -115,12 +117,41 @@ bool should_draw(int remaining, int dot) {
     last_draw_time = millis();
   }
 
+  //return false;
+
   return current_dot == dot;
+}
+
+bool should_fade(int remaining) {
+  // Determine if we should fade the display
+  // as a warning that the countdown is nearly
+  // completed.
+
+  if (remaining > WARNING_SECS) {
+    return false;
+  }
+
+  int time_since = millis() - last_draw_time;
+
+  if (time_since > draw_timeout) {
+    fade = !fade;
+  }
+
+  return false;
+
+  return fade;
+  
 }
 
 void update_display(int remaining) {
 
   //int draw_dots = should_draw(remaining);
+
+  if (should_fade(remaining)) {
+    matrix.setBrightness(11);
+  } else {
+    matrix.setBrightness(15);
+  }
 
   // Extract the minutes remaining
   int secs = remaining % 60;
