@@ -8,21 +8,28 @@
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
-#define PLAYPAUSE_PIN 2
-#define RESET_PIN 3
+#define ACTIVE_PIN 4
+#define BREAK_PIN 3
+#define RESET_PIN 2
 
 // Logic states for application
-#define STATE_NULL -1
-#define STATE_STARTUP 0
-#define STATE_READY 1
-#define STATE_COUNTDOWN 2
-#define STATE_PAUSED 3
-int current_state = STATE_NULL;
+#define STATE_OFF -1
+#define STATE_ACTIVE 0
+#define STATE_BREAK 1
+#define COUNTDOWN_OFF 2
+#define COUNTDOWN_READY 3
+#define COUNTDOWN_RUNNING 4
+#define COUNTDOWN_PAUSED 5
+
+int current_state = STATE_OFF;
+int countdown_state = COUNTDOWN_OFF;
 
 // Other options
 #define DEBOUNCE_MS 5
 
-const int ACTIVE_SECS = 25 * 60;
+const int ACTIVE_SECS = 5;
+const int BREAK_SECS = 5 * 60;
+int timer_secs = 0;
 
 Adafruit_7segment matrix = Adafruit_7segment();
 
@@ -30,54 +37,51 @@ unsigned long start_time;
 unsigned long elapsed;
 unsigned long remaining;
 
-Bounce playpause_debouncer = Bounce();
-Bounce reset_debouncer = Bounce();
+Bounce active_pin_db = Bounce();
+Bounce break_pin_db = Bounce();
+Bounce reset_pin_db = Bounce();
 
 void setup() {
 
   matrix.begin(MATRIX_I2C_ADDR);
 
-  // Set up the playpause button
-  pinMode(PLAYPAUSE_PIN, INPUT_PULLUP);
-  playpause_debouncer.attach(PLAYPAUSE_PIN);
-  playpause_debouncer.interval(DEBOUNCE_MS);
+  // Setup the active button
+  pinMode(ACTIVE_PIN, INPUT_PULLUP);
+  active_pin_db.attach(ACTIVE_PIN);
+  active_pin_db.interval(DEBOUNCE_MS);
+
+  // Setup the break button
+  pinMode(BREAK_PIN, INPUT_PULLUP);
+  break_pin_db.attach(BREAK_PIN);
+  break_pin_db.interval(DEBOUNCE_MS);
 
   // Set up the reset button
   pinMode(RESET_PIN, INPUT_PULLUP);
-  reset_debouncer.attach(RESET_PIN);
-  reset_debouncer.interval(DEBOUNCE_MS);
+  reset_pin_db.attach(RESET_PIN);
+  reset_pin_db.interval(DEBOUNCE_MS);
 
   Serial.begin(9600);
   
 
   // Initialize the display
   clear_display();
-  current_state = STATE_STARTUP;
+  current_state = STATE_OFF;
   
 }
 
-void start_countdown() {
-  // Initialize the countdown
-  
-  start_time = millis();
-  elapsed = 0;
-  current_state = STATE_COUNTDOWN;
-  
-}
-
-void clear_display() {
-  matrix.clear();
-  matrix.writeDisplay();
-}
-
-void write_display(int remaining, int draw_colon = true) {
+ void update_display(int remaining, int draw_colon = true) {
 
     // Extract the minutes remaining
     int secs = remaining % 60;
     int mins = (remaining - secs) / 60;
 
     // Write each character to the display
-    matrix.writeDigitNum(0, (mins / 10));
+    if ((mins / 10) > 0) {
+       matrix.writeDigitNum(0, (mins / 10));
+    } else {
+      matrix.writeDigitRaw(0, 0);
+    }
+    
     matrix.writeDigitNum(1, (mins % 10));
     matrix.drawColon(draw_colon);
     matrix.writeDigitNum(3, (secs / 10));
@@ -85,74 +89,113 @@ void write_display(int remaining, int draw_colon = true) {
     matrix.writeDisplay();
 }
 
-void pause_countdown() {
-  Serial.println("Paused");
-  elapsed += (millis() - start_time) / 1000;
-  current_state = STATE_PAUSED;
-  
+
+
+void clear_display() {
+  matrix.clear();
+  matrix.writeDisplay();
 }
 
-void resume_countdown() {
-  start_time = millis();
-  current_state = STATE_COUNTDOWN;
-}
+
 
 
 void loop() {
 
   // Update the bouncers
-  playpause_debouncer.update();
-  reset_debouncer.update();
+  active_pin_db.update();
+  break_pin_db.update();
+  reset_pin_db.update();
 
-  int button_state = playpause_debouncer.rose();
-  int reset_btn_state = reset_debouncer.rose();
+  // Read the button state
+  int active_btn = active_pin_db.rose();
+  int break_btn = break_pin_db.rose();
+  int reset_btn = reset_pin_db.rose();
 
-  if (reset_btn_state) {
-    write_display(ACTIVE_SECS);
-    current_state = STATE_READY;   
+  int desired_time = 0;
+
+  if (active_btn) {
+    switch(current_state) {
+      case STATE_OFF:
+        timer_secs = ACTIVE_SECS;
+        update_display(timer_secs);
+        current_state = STATE_ACTIVE;
+        countdown_state = COUNTDOWN_READY;
+        break;
+      case STATE_ACTIVE:
+        timer_secs = BREAK_SECS;
+        update_display(timer_secs);
+        current_state = STATE_BREAK;
+        countdown_state = COUNTDOWN_READY;
+        break;
+      case STATE_BREAK:
+        clear_display();
+        current_state = STATE_OFF;
+        countdown_state = COUNTDOWN_OFF;
+        break;
+    }
   }
 
-  if (button_state == true) {
-      Serial.println(button_state);
-
+  if (break_btn) {
+    Serial.println("Read break");
+    
+    switch(countdown_state) {
+      case COUNTDOWN_OFF:
+        Serial.println("Countdown is off");
+        break;
+      case COUNTDOWN_READY:
+        start_time = millis();
+        elapsed = 0;
+        countdown_state = COUNTDOWN_RUNNING;
+        break;
+      case COUNTDOWN_RUNNING:
+        // Pausing
+        elapsed += (millis() - start_time) / 1000;
+        countdown_state = COUNTDOWN_PAUSED;
+        break;
+      case COUNTDOWN_PAUSED:
+        start_time = millis();
+        countdown_state = COUNTDOWN_RUNNING;
+        break;
+    }
   }
 
-  switch(current_state) {
-    case STATE_STARTUP:
-      if (button_state == true) {
-        write_display(ACTIVE_SECS);
-        current_state = STATE_READY;
-        Serial.println("Heard button");
-      }
-      break;
-    case STATE_READY:
-      if (button_state == true) {
-        start_countdown();
-      }
-      break;
-    case STATE_COUNTDOWN:
-      if (button_state == true) {
-        pause_countdown();
-      }
-      break;
-    case STATE_PAUSED:
-      if (button_state == true) {
-        resume_countdown();
-      }
-      break;
-  }
+  if (countdown_state == COUNTDOWN_RUNNING) {
 
-  if (current_state == STATE_COUNTDOWN) {
   
     // Calculate the remaining time
-    //elapsed = (millis() - start_time) / 1000;
-    remaining = ACTIVE_SECS - elapsed - ((millis() - start_time) / 1000);
+    remaining = timer_secs - elapsed - ((millis() - start_time) / 1000);
+
+    update_display(remaining);
+    
+    if (remaining <= 0) {
+
+
+      if (current_state == STATE_ACTIVE) {
+        // Go to break
+
+              Serial.println("timeout");
+
+
+        timer_secs = BREAK_SECS;
+        update_display(timer_secs);
+        current_state = STATE_BREAK;
+        countdown_state = COUNTDOWN_READY;
+        
+        
+      }
+      else if (current_state == STATE_BREAK) {
+        // Go to active
+        timer_secs = BREAK_SECS;
+        update_display(timer_secs);
+        current_state = STATE_BREAK;
+        countdown_state = COUNTDOWN_READY;       
+      }
+    }
   
-    write_display(remaining);
+
 
     delay(50);
   }
-
 }
 
 
