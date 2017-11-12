@@ -53,6 +53,7 @@ void start_countdown() {
   // Initialize the countdown
   
   start_time = millis();
+  elapsed = 0;
   current_state = STATE_COUNTDOWN;
   
 }
@@ -79,6 +80,14 @@ void write_display(int remaining, int draw_colon = true) {
 
 void pause_countdown() {
   Serial.println("Paused");
+  elapsed += (millis() - start_time) / 1000;
+  current_state = STATE_PAUSED;
+  
+}
+
+void resume_countdown() {
+  start_time = millis();
+  current_state = STATE_COUNTDOWN;
 }
 
 
@@ -111,21 +120,23 @@ void loop() {
       if (button_state == true) {
         pause_countdown();
       }
-      break;     
-      
-      
+      break;
+    case STATE_PAUSED:
+      if (button_state == true) {
+        resume_countdown();
+      }
+      break;
   }
 
   if (current_state == STATE_COUNTDOWN) {
   
     // Calculate the remaining time
-    elapsed = (millis() - start_time) / 1000;
-    remaining = ACTIVE_SECS - elapsed;
+    //elapsed = (millis() - start_time) / 1000;
+    remaining = ACTIVE_SECS - elapsed - ((millis() - start_time) / 1000);
   
     write_display(remaining);
-  
 
-    delay(100);
+    delay(50);
   }
 
 }
