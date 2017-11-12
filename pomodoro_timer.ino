@@ -25,14 +25,23 @@ void setup() {
 }
 
 void loop() {
+  // Calculate the remaining time
   elapsed = (millis() - start_time) / 1000;
   remaining = ACTIVE_SECS - elapsed;
 
-  Serial.println(remaining);
+  // Extract the minutes remaining
+  int remaining_secs = remaining % 60;
+  int remaining_mins = (remaining - remaining_secs) / 60;
   
+  Serial.println(remaining_secs);
+  Serial.println(remaining_mins);
 
-  matrix.println(remaining);
-  matrix.drawColon(false);
+  matrix.writeDigitNum(0, (remaining_mins / 10));
+  matrix.writeDigitNum(1, (remaining_mins % 10));
+  matrix.drawColon(true);
+  matrix.writeDigitNum(3, (remaining_secs / 10));
+  matrix.writeDigitNum(4, (remaining_secs % 10));
+
   matrix.writeDisplay();
   delay(1000);
 
