@@ -6,6 +6,8 @@
 #include "Adafruit_LEDBackpack.h"
 #include <Bounce2.h>
 #include "pitches.h"
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -13,23 +15,26 @@
 #define BREAK_PIN 3
 #define RESET_PIN 2
 #define SPEAKER_PIN 9
+#define BMP280_I2C_ADDR 0x76
 
 
 // Logic states for application
 #define STATE_OFF -1
 #define STATE_ACTIVE 0
 #define STATE_BREAK 1
-#define COUNTDOWN_OFF 2
-#define COUNTDOWN_READY 3
-#define COUNTDOWN_RUNNING 4
-#define COUNTDOWN_PAUSED 5
+#define STATE_TEMP 2
+
+#define COUNTDOWN_OFF 100
+#define COUNTDOWN_READY 101
+#define COUNTDOWN_RUNNING 102
+#define COUNTDOWN_PAUSED 103
 
 int current_state = STATE_OFF;
 int countdown_state = COUNTDOWN_OFF;
 
 // Other options
 #define DEBOUNCE_MS 5
-#define MUSIC_SPEED 40 
+#define MUSIC_SPEED 80 
 
 const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
@@ -42,10 +47,16 @@ int current_dot = 0;
 int fade = true;
 
 Adafruit_7segment matrix = Adafruit_7segment();
+Adafruit_BME280 bme;
 
 unsigned long start_time;
 unsigned long elapsed;
 unsigned long remaining;
+
+const int TEMP_TIMEOUT_SECS = 1;
+int temp_f;
+int humidity;
+unsigned long last_temp_time;
 
 Bounce active_pin_db = Bounce();
 Bounce break_pin_db = Bounce();
@@ -76,6 +87,8 @@ void play_charge() {
 }
 
 void setup() {
+  
+  Serial.begin(9600);
 
   matrix.begin(MATRIX_I2C_ADDR);
 
@@ -94,7 +107,14 @@ void setup() {
   reset_pin_db.attach(RESET_PIN);
   reset_pin_db.interval(DEBOUNCE_MS);
 
-  Serial.begin(9600);
+  // Connect to the BMP280
+  bool bmp280_status;
+  bmp280_status = bme.begin(BMP280_I2C_ADDR);
+  if (!bmp280_status) {
+    Serial.println("Could not find a valid BMP280 sensor");
+  }
+
+
   
 
   // Initialize the display
@@ -122,6 +142,20 @@ bool should_draw(int remaining, int dot) {
   return current_dot == dot;
 }
 
+bool should_read_temp() {
+  // Determine if we should read the temperature
+
+  bool read_temp = false;
+  
+  unsigned long time_since = millis() - last_temp_time;
+
+  if (time_since > TEMP_TIMEOUT_SECS * 1000) {
+    read_temp = true;
+    last_temp_time = millis();
+  }
+
+  return read_temp;
+}
 bool should_fade(int remaining) {
   // Determine if we should fade the display
   // as a warning that the countdown is nearly
@@ -131,7 +165,7 @@ bool should_fade(int remaining) {
     return false;
   }
 
-  int time_since = millis() - last_draw_time;
+  unsigned long time_since = millis() - last_draw_time;
 
   if (time_since > draw_timeout) {
     fade = !fade;
@@ -184,6 +218,16 @@ void clear_display() {
   matrix.writeDisplay();
 }
 
+void show_temp() {
+  matrix.writeDigitNum(0, (temp_f / 10));
+  matrix.writeDigitNum(1, (temp_f % 10));
+  matrix.writeDigitRaw(3, 0x63);
+  matrix.writeDigitRaw(4, 0x71);
+
+  matrix.writeDisplay();
+  
+}
+
 void loop() {
 
   // Update the bouncers
@@ -213,6 +257,11 @@ void loop() {
         countdown_state = COUNTDOWN_READY;
         break;
       case STATE_BREAK:
+        clear_display();
+        current_state = STATE_TEMP;
+        countdown_state = COUNTDOWN_OFF;
+        break;  
+      case STATE_TEMP:
         clear_display();
         current_state = STATE_OFF;
         countdown_state = COUNTDOWN_OFF;
@@ -275,8 +324,20 @@ void loop() {
       }
     }
 
-    delay(10);
+
+
   }
+
+  if (current_state == STATE_TEMP) {
+    show_temp();
+  }
+
+  if (should_read_temp()) {
+    temp_f = round(bme.readTemperature() * 9/5 + 32);
+  }
+
+ delay(10);
+
 }
 
 
