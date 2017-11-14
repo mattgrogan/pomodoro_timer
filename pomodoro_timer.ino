@@ -29,6 +29,10 @@
 #define COUNTDOWN_RUNNING 102
 #define COUNTDOWN_PAUSED 103
 
+// Brightness controls 0 - 15 (15=brightest)
+#define MAX_BRIGHTNESS 15
+#define MIN_BRIGHTNESS 4
+
 int current_state = STATE_OFF;
 int countdown_state = COUNTDOWN_OFF;
 
@@ -42,9 +46,7 @@ const int WARNING_SECS = 2 * 60;
 
 int timer_secs = 0;
 unsigned long last_draw_time = 0;
-int draw_timeout = 200;
-int current_dot = 0;
-int fade = true;
+int draw_timeout = 100;
 
 Adafruit_7segment matrix = Adafruit_7segment();
 Adafruit_BME280 bme;
@@ -61,6 +63,26 @@ unsigned long last_temp_time;
 Bounce active_pin_db = Bounce();
 Bounce break_pin_db = Bounce();
 Bounce reset_pin_db = Bounce();
+
+class BrightnessCtrl {
+  int current_brightness = 15;
+  int dir = 1;
+
+  public:
+    int next() {
+      // Return next brightness
+      if (current_brightness == MAX_BRIGHTNESS || current_brightness == MIN_BRIGHTNESS) {
+        dir *= -1;
+      }
+
+      current_brightness += dir;
+
+      return current_brightness;
+
+    }
+};
+
+BrightnessCtrl br;
 
 void play(int pin, int *notes, int *durations, int speed) {
   // Play notes and durations at speed through pin
@@ -85,6 +107,8 @@ void play_charge() {
   
   play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
 }
+
+
 
 void setup() {
   
@@ -123,23 +147,22 @@ void setup() {
   
 }
 
-bool should_draw(int remaining, int dot) {
-  // Determine if it should draw for blinking
+bool should_draw(int remaining) {
 
   if (remaining > WARNING_SECS) {
     return false;
   }
 
+  bool result = false;
   int time_since = millis() - last_draw_time;
 
   if (time_since > draw_timeout) {
-    current_dot = (current_dot + 1) % 4;
+    result = true;
     last_draw_time = millis();
   }
 
-  //return false;
 
-  return current_dot == dot;
+  return result;
 }
 
 bool should_read_temp() {
@@ -156,36 +179,11 @@ bool should_read_temp() {
 
   return read_temp;
 }
-bool should_fade(int remaining) {
-  // Determine if we should fade the display
-  // as a warning that the countdown is nearly
-  // completed.
-
-  if (remaining > WARNING_SECS) {
-    return false;
-  }
-
-  unsigned long time_since = millis() - last_draw_time;
-
-  if (time_since > draw_timeout) {
-    fade = !fade;
-  }
-
-  return false;
-
-  return fade;
-  
-}
 
 void update_display(int remaining) {
 
   //int draw_dots = should_draw(remaining);
 
-  if (should_fade(remaining)) {
-    matrix.setBrightness(11);
-  } else {
-    matrix.setBrightness(15);
-  }
 
   // Extract the minutes remaining
   int secs = remaining % 60;
@@ -195,17 +193,17 @@ void update_display(int remaining) {
   if ((mins / 10) > 0) {
      matrix.writeDigitNum(0, (mins / 10));
   } else {
-    if (should_draw(remaining, 0)) {
-      matrix.writeDigitRaw(0, 0b10000000);
-    } else {
-      matrix.writeDigitRaw(0, 0);
-    }
+    matrix.writeDigitRaw(0, 0);
+  }
+
+  if (should_draw(remaining)) {
+    matrix.setBrightness(br.next());
   }
   
-  matrix.writeDigitNum(1, (mins % 10), should_draw(remaining, 1));
+  matrix.writeDigitNum(1, (mins % 10));
   matrix.drawColon(true);
-  matrix.writeDigitNum(3, (secs / 10), should_draw(remaining, 2));
-  matrix.writeDigitNum(4, (secs % 10), should_draw(remaining, 3));
+  matrix.writeDigitNum(3, (secs / 10));
+  matrix.writeDigitNum(4, (secs % 10));
   
   matrix.writeDisplay();
 
