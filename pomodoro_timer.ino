@@ -2,12 +2,12 @@
  *  Pomodoro Timer
  *  Matthew Grogan
  *******************/
-#include <Wire.h>
-#include "Adafruit_LEDBackpack.h"
+#include <Adafruit_LEDBackpack.h>
 #include <Bounce2.h>
-#include "pitches.h"
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+
+#include "pitches.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -16,7 +16,6 @@
 #define RESET_PIN 2
 #define SPEAKER_PIN 9
 #define BMP280_I2C_ADDR 0x76
-
 
 // Logic states for application
 #define STATE_OFF -1
@@ -31,7 +30,9 @@
 
 // Brightness controls 0 - 15 (15=brightest)
 #define MAX_BRIGHTNESS 15
-#define MIN_BRIGHTNESS 4
+#define MIN_BRIGHTNESS 0
+
+#define FADE_STEP_MS 100
 
 int current_state = STATE_OFF;
 int countdown_state = COUNTDOWN_OFF;
@@ -41,12 +42,10 @@ int countdown_state = COUNTDOWN_OFF;
 #define MUSIC_SPEED 80 
 
 const int ACTIVE_SECS = 25 * 60;
-const int BREAK_SECS = 5 * 60;
+const int BREAK_SECS = 3 * 60;
 const int WARNING_SECS = 2 * 60;
 
 int timer_secs = 0;
-unsigned long last_draw_time = 0;
-int draw_timeout = 100;
 
 Adafruit_7segment matrix = Adafruit_7segment();
 Adafruit_BME280 bme;
@@ -57,8 +56,6 @@ unsigned long remaining;
 
 const int TEMP_TIMEOUT_SECS = 1;
 int temp_f;
-int humidity;
-unsigned long last_temp_time;
 
 Bounce active_pin_db = Bounce();
 Bounce break_pin_db = Bounce();
@@ -78,11 +75,36 @@ class BrightnessCtrl {
       current_brightness += dir;
 
       return current_brightness;
-
     }
 };
 
 BrightnessCtrl br;
+
+class IntervalCtrl {
+  unsigned long _last;
+  int _interval_ms;
+
+  public:
+    IntervalCtrl(int interval_ms) {
+      _interval_ms = interval_ms;
+    }
+    bool ready() {
+      // Has the interval passed since the last measurement
+      bool result = false;
+      int time_since = millis() - _last;
+    
+      if (time_since > _interval_ms) {
+        result = true;
+        _last = millis();
+      }
+
+      return result;
+
+    }
+};
+
+IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
+IntervalCtrl fader(FADE_STEP_MS);
 
 void play(int pin, int *notes, int *durations, int speed) {
   // Play notes and durations at speed through pin
@@ -138,46 +160,10 @@ void setup() {
     Serial.println("Could not find a valid BMP280 sensor");
   }
 
-
-  
-
   // Initialize the display
   clear_display();
   current_state = STATE_OFF;
   
-}
-
-bool should_draw(int remaining) {
-
-  if (remaining > WARNING_SECS) {
-    return false;
-  }
-
-  bool result = false;
-  int time_since = millis() - last_draw_time;
-
-  if (time_since > draw_timeout) {
-    result = true;
-    last_draw_time = millis();
-  }
-
-
-  return result;
-}
-
-bool should_read_temp() {
-  // Determine if we should read the temperature
-
-  bool read_temp = false;
-  
-  unsigned long time_since = millis() - last_temp_time;
-
-  if (time_since > TEMP_TIMEOUT_SECS * 1000) {
-    read_temp = true;
-    last_temp_time = millis();
-  }
-
-  return read_temp;
 }
 
 void update_display(int remaining) {
@@ -196,9 +182,9 @@ void update_display(int remaining) {
     matrix.writeDigitRaw(0, 0);
   }
 
-  if (should_draw(remaining)) {
+  if (remaining < WARNING_SECS && fader.ready() ) {
     matrix.setBrightness(br.next());
-  }
+  } 
   
   matrix.writeDigitNum(1, (mins % 10));
   matrix.drawColon(true);
@@ -223,7 +209,6 @@ void show_temp() {
   matrix.writeDigitRaw(4, 0x71);
 
   matrix.writeDisplay();
-  
 }
 
 void loop() {
@@ -268,11 +253,9 @@ void loop() {
   }
 
   if (break_btn) {
-    Serial.println("Read break");
-    
+   
     switch(countdown_state) {
       case COUNTDOWN_OFF:
-        Serial.println("Countdown is off");
         break;
       case COUNTDOWN_READY:
         start_time = millis();
@@ -292,7 +275,6 @@ void loop() {
   }
 
   if (countdown_state == COUNTDOWN_RUNNING) {
-
   
     // Calculate the remaining time
     remaining = timer_secs - elapsed - ((millis() - start_time) / 1000);
@@ -330,7 +312,7 @@ void loop() {
     show_temp();
   }
 
-  if (should_read_temp()) {
+  if (temp_interval.ready()) {
     temp_f = round(bme.readTemperature() * 9/5 + 32);
   }
 
