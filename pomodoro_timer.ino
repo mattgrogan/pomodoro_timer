@@ -39,10 +39,10 @@ int countdown_state = COUNTDOWN_OFF;
 
 // Other options
 #define DEBOUNCE_MS 5
-#define MUSIC_SPEED 80 
+#define MUSIC_SPEED 60
 
 const int ACTIVE_SECS = 25 * 60;
-const int BREAK_SECS = 3 * 60;
+const int BREAK_SECS = 2; //3 * 60;
 const int WARNING_SECS = 2 * 60;
 
 int timer_secs = 0;
@@ -99,7 +99,6 @@ class IntervalCtrl {
       }
 
       return result;
-
     }
 };
 
@@ -152,6 +151,10 @@ void setup() {
   pinMode(RESET_PIN, INPUT_PULLUP);
   reset_pin_db.attach(RESET_PIN);
   reset_pin_db.interval(DEBOUNCE_MS);
+
+  // Set up speaker
+  pinMode(SPEAKER_PIN, OUTPUT);
+  analogWrite(SPEAKER_PIN, 0);
 
   // Connect to the BMP280
   bool bmp280_status;
