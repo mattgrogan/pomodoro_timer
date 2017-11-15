@@ -13,7 +13,6 @@
 #define MATRIX_I2C_ADDR 0x70
 #define ACTIVE_PIN 4
 #define BREAK_PIN 3
-#define RESET_PIN 2
 #define SPEAKER_PIN 9
 #define BMP280_I2C_ADDR 0x76
 
@@ -42,7 +41,7 @@ int countdown_state = COUNTDOWN_OFF;
 #define MUSIC_SPEED 60
 
 const int ACTIVE_SECS = 25 * 60;
-const int BREAK_SECS = 2; //3 * 60;
+const int BREAK_SECS = 5 * 60;
 const int WARNING_SECS = 2 * 60;
 
 int timer_secs = 0;
@@ -59,7 +58,6 @@ int temp_f;
 
 Bounce active_pin_db = Bounce();
 Bounce break_pin_db = Bounce();
-Bounce reset_pin_db = Bounce();
 
 class BrightnessCtrl {
   int current_brightness = 15;
@@ -147,11 +145,6 @@ void setup() {
   break_pin_db.attach(BREAK_PIN);
   break_pin_db.interval(DEBOUNCE_MS);
 
-  // Set up the reset button
-  pinMode(RESET_PIN, INPUT_PULLUP);
-  reset_pin_db.attach(RESET_PIN);
-  reset_pin_db.interval(DEBOUNCE_MS);
-
   // Set up speaker
   pinMode(SPEAKER_PIN, OUTPUT);
   analogWrite(SPEAKER_PIN, 0);
@@ -219,12 +212,10 @@ void loop() {
   // Update the bouncers
   active_pin_db.update();
   break_pin_db.update();
-  reset_pin_db.update();
 
   // Read the button state
   int active_btn = active_pin_db.rose();
   int break_btn = break_pin_db.rose();
-  int reset_btn = reset_pin_db.rose();
 
   int desired_time = 0;
 
