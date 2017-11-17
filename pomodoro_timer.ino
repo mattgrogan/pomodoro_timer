@@ -142,7 +142,7 @@ class Timer {
     }
 
     bool expired() {
-      return remaining() <= 0;
+      return remaining() < 0;
     }
 
     int state() {
