@@ -34,7 +34,6 @@
 #define FADE_STEP_MS 100
 
 int current_state = STATE_OFF;
-int countdown_state = COUNTDOWN_OFF;
 
 // Other options
 #define DEBOUNCE_MS 5
@@ -44,14 +43,8 @@ const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
 const int WARNING_SECS = 2 * 60;
 
-int timer_secs = 0;
-
 Adafruit_7segment matrix = Adafruit_7segment();
 Adafruit_BME280 bme;
-
-unsigned long start_time;
-unsigned long elapsed;
-unsigned long remaining;
 
 const int TEMP_TIMEOUT_SECS = 1;
 int temp_f;
@@ -103,6 +96,63 @@ class IntervalCtrl {
 IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
 IntervalCtrl fader(FADE_STEP_MS);
 
+class Timer {
+  int _duration_secs = 0;
+  int _elapsed = 0;
+  int _current_state = COUNTDOWN_OFF;
+  unsigned long _start_time;
+
+  public:
+
+    int set(int duration_secs) {
+      reset();
+      _duration_secs = duration_secs;
+      _current_state = COUNTDOWN_READY;
+      return 0;
+    }
+    
+    int start() {
+      if (_current_state == COUNTDOWN_READY || _current_state == COUNTDOWN_PAUSED) {
+        _start_time = millis();
+        _current_state = COUNTDOWN_RUNNING;
+        return 0;
+      } else {
+        return -1;
+      }
+    }
+
+    int pause() {
+      if (_current_state == COUNTDOWN_RUNNING) {
+        _elapsed += (millis() - _start_time) / 1000;
+        _current_state = COUNTDOWN_PAUSED;
+        return 0;
+      } else {
+        return -1;
+      }
+    }
+
+    void reset() {
+      _elapsed = 0;
+      _duration_secs = 0;
+      _current_state = COUNTDOWN_OFF;
+    }
+
+    int remaining() {
+      return _duration_secs - _elapsed - ((millis() - _start_time) / 1000);
+    }
+
+    bool expired() {
+      return remaining() <= 0;
+    }
+
+    int state() {
+      return _current_state;
+    }
+  
+};
+
+Timer timer;
+
 void play(int pin, int *notes, int *durations, int speed) {
   // Play notes and durations at speed through pin
 
@@ -126,8 +176,6 @@ void play_charge() {
   
   play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
 }
-
-
 
 void setup() {
   
@@ -163,9 +211,6 @@ void setup() {
 }
 
 void update_display(int remaining) {
-
-  //int draw_dots = should_draw(remaining);
-
 
   // Extract the minutes remaining
   int secs = remaining % 60;
@@ -222,83 +267,66 @@ void loop() {
   if (active_btn) {
     switch(current_state) {
       case STATE_OFF:
-        timer_secs = ACTIVE_SECS;
-        update_display(timer_secs);
+        timer.set(ACTIVE_SECS);
+        update_display(ACTIVE_SECS);
         current_state = STATE_ACTIVE;
-        countdown_state = COUNTDOWN_READY;
         break;
       case STATE_ACTIVE:
-        timer_secs = BREAK_SECS;
-        update_display(timer_secs);
+        timer.set(BREAK_SECS);
+        update_display(BREAK_SECS);
         current_state = STATE_BREAK;
-        countdown_state = COUNTDOWN_READY;
         break;
       case STATE_BREAK:
         clear_display();
         current_state = STATE_TEMP;
-        countdown_state = COUNTDOWN_OFF;
+        timer.reset();
         break;  
       case STATE_TEMP:
         clear_display();
         current_state = STATE_OFF;
-        countdown_state = COUNTDOWN_OFF;
+        timer.reset();
         break;
     }
   }
 
   if (break_btn) {
    
-    switch(countdown_state) {
+    switch(timer.state()) {
       case COUNTDOWN_OFF:
         break;
       case COUNTDOWN_READY:
-        start_time = millis();
-        elapsed = 0;
-        countdown_state = COUNTDOWN_RUNNING;
+        timer.start();
         break;
       case COUNTDOWN_RUNNING:
-        // Pausing
-        elapsed += (millis() - start_time) / 1000;
-        countdown_state = COUNTDOWN_PAUSED;
+        timer.pause();
         break;
       case COUNTDOWN_PAUSED:
-        start_time = millis();
-        countdown_state = COUNTDOWN_RUNNING;
+        timer.start();
         break;
     }
   }
 
-  if (countdown_state == COUNTDOWN_RUNNING) {
+  if (timer.state() == COUNTDOWN_RUNNING) {
   
-    // Calculate the remaining time
-    remaining = timer_secs - elapsed - ((millis() - start_time) / 1000);
-
-    update_display(remaining);
+    update_display(timer.remaining());
     
-    if (remaining <= 0) {
+    if (timer.expired()) {
 
       play_charge();
 
       if (current_state == STATE_ACTIVE) {
         // Go to break
-
-        timer_secs = BREAK_SECS;
-        update_display(timer_secs);
+        timer.set(BREAK_SECS);
+        update_display(BREAK_SECS);
         current_state = STATE_BREAK;
-        countdown_state = COUNTDOWN_READY;
-        
-        
       }
       else if (current_state == STATE_BREAK) {
         // Go to active
-        timer_secs = ACTIVE_SECS;
-        update_display(timer_secs);
+        timer.set(ACTIVE_SECS);
+        update_display(ACTIVE_SECS);
         current_state = STATE_ACTIVE;
-        countdown_state = COUNTDOWN_READY;       
       }
     }
-
-
 
   }
 
