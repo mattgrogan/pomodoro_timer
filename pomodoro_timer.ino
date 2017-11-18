@@ -30,8 +30,8 @@ Pomodoro pomodoro;
 #define DEBOUNCE_MS 5
 #define MUSIC_SPEED 60
 
-const int ACTIVE_SECS = 25 * 60;
-const int BREAK_SECS = 5 * 60;
+//const int ACTIVE_SECS = 25 * 60;
+//const int BREAK_SECS = 5 * 60;
 const int WARNING_SECS = 2 * 60;
 
 Adafruit_7segment matrix = Adafruit_7segment();
@@ -86,8 +86,6 @@ class IntervalCtrl {
 
 IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
 IntervalCtrl fader(FADE_STEP_MS);
-
-Timer timer;
 
 void play(int pin, int *notes, int *durations, int speed) {
   // Play notes and durations at speed through pin
@@ -203,24 +201,20 @@ void loop() {
   if (active_btn) {
     switch(pomodoro.state()) {
       case STATE_OFF:
-        timer.set(ACTIVE_SECS);
+        //timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
-        //pomodoro.set_state(STATE_ACTIVE);
         break;
       case STATE_ACTIVE:
-        timer.set(BREAK_SECS);
+        //timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
-        //pomodoro.set_state(STATE_BREAK);
         break;
       case STATE_BREAK:
         clear_display();
-        //pomodoro.set_state(STATE_TEMP);
-        timer.reset();
+        //timer.reset();
         break;  
       case STATE_TEMP:
         clear_display();
-        //pomodoro.set_state(STATE_OFF);
-        timer.reset();
+        //timer.reset();
         break;
     }
 
@@ -229,38 +223,38 @@ void loop() {
 
   if (break_btn) {
    
-    switch(timer.state()) {
+    switch(pomodoro.timer.state()) {
       case COUNTDOWN_OFF:
         break;
       case COUNTDOWN_READY:
-        timer.start();
+        pomodoro.timer.start();
         break;
       case COUNTDOWN_RUNNING:
-        timer.pause();
+        pomodoro.timer.pause();
         break;
       case COUNTDOWN_PAUSED:
-        timer.start();
+        pomodoro.timer.start();
         break;
     }
   }
 
-  if (timer.state() == COUNTDOWN_RUNNING) {
+  if (pomodoro.timer.state() == COUNTDOWN_RUNNING) {
   
-    update_display(timer.remaining());
+    update_display(pomodoro.timer.remaining());
     
-    if (timer.expired()) {
+    if (pomodoro.timer.expired()) {
 
       play_charge();
 
       if (pomodoro.state() == STATE_ACTIVE) {
         // Go to break
-        timer.set(BREAK_SECS);
+        pomodoro.timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
         pomodoro.set_state(STATE_BREAK);
       }
       else if (pomodoro.state() == STATE_BREAK) {
         // Go to active
-        timer.set(ACTIVE_SECS);
+        pomodoro.timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
         pomodoro.set_state(STATE_ACTIVE);
       }

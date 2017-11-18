@@ -9,6 +9,11 @@
 #define Pomodoro_State_h
 
 #include "Arduino.h"
+#include "timer.h"
+
+// TODO: This is temporary until refactored
+const int ACTIVE_SECS = 25 * 60;
+const int BREAK_SECS = 5 * 60;
 
 #define STATE_OFF -1
 #define STATE_ACTIVE 0
@@ -49,6 +54,7 @@ class State_Temp : public State {
 
 class Pomodoro {
   private:
+
     State *_current_state;
     
     State_Off _state_off;
@@ -56,9 +62,11 @@ class Pomodoro {
     State_Break _state_break;
     State_Temp _state_temp;  
   public:
+    Timer timer;
     Pomodoro();
     int state();
     void set_state(int state);
+    void set_timer(int seconds);
     void button_1();
 };
 

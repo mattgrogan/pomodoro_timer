@@ -42,6 +42,7 @@ int State_Off::name() {
 }
 
 void State_Off::button_1(Pomodoro *p) {
+  p->timer.set(ACTIVE_SECS);
   p->set_state(STATE_ACTIVE);
   
 }
@@ -51,6 +52,7 @@ int State_Active::name() {
 }
 
 void State_Active::button_1(Pomodoro *p) {
+  p->timer.set(BREAK_SECS);
   p->set_state(STATE_BREAK);
 }
 
@@ -59,6 +61,7 @@ int State_Break::name() {
 }
 
 void State_Break::button_1(Pomodoro *p) {
+  p->timer.reset();
   p->set_state(STATE_TEMP);
 }
 
@@ -67,6 +70,7 @@ int State_Temp::name() {
 }
 
 void State_Temp::button_1(Pomodoro *p) {
+  p->timer.reset();
   p->set_state(STATE_OFF);
 }
 
