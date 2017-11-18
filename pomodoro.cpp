@@ -33,19 +33,40 @@ void Pomodoro::set_state(int state) {
   }
 }
 
+void Pomodoro::button_1() {
+  _current_state->button_1(this);
+}
+
 int State_Off::name() {
   return STATE_OFF;
+}
+
+void State_Off::button_1(Pomodoro *p) {
+  p->set_state(STATE_ACTIVE);
+  
 }
 
 int State_Active::name() {
   return STATE_ACTIVE;
 }
 
+void State_Active::button_1(Pomodoro *p) {
+  p->set_state(STATE_BREAK);
+}
+
 int State_Break::name() {
   return STATE_BREAK;
 }
 
+void State_Break::button_1(Pomodoro *p) {
+  p->set_state(STATE_TEMP);
+}
+
 int State_Temp::name() {
   return STATE_TEMP;
+}
+
+void State_Temp::button_1(Pomodoro *p) {
+  p->set_state(STATE_OFF);
 }
 

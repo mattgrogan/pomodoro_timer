@@ -15,29 +15,36 @@
 #define STATE_BREAK 1
 #define STATE_TEMP 2
 
+class Pomodoro; 
+
 class State {
   public:
     virtual int name() = 0;
+    virtual void button_1(Pomodoro *p) = 0;
 };
 
 class State_Off : public State {
   public:
     int name();
+    void button_1(Pomodoro *p);
 };
 
 class State_Active : public State {
   public:
     int name();
+    void button_1(Pomodoro *p);
 };
 
 class State_Break : public State {
   public:
     int name();
+    void button_1(Pomodoro *p);
 };
 
 class State_Temp : public State {
   public:
     int name();
+    void button_1(Pomodoro *p);
 };
 
 class Pomodoro {
@@ -52,6 +59,7 @@ class Pomodoro {
     Pomodoro();
     int state();
     void set_state(int state);
+    void button_1();
 };
 
 #endif

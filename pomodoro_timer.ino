@@ -25,11 +25,6 @@
 #define FADE_STEP_MS 100
 
 Pomodoro pomodoro;
-//State *current_state;
-//State_Off state_off;
-//State_Active state_active;
-//State_Break state_break;
-//State_Temp state_temp;
 
 // Other options
 #define DEBOUNCE_MS 5
@@ -210,24 +205,26 @@ void loop() {
       case STATE_OFF:
         timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
-        pomodoro.set_state(STATE_ACTIVE);
+        //pomodoro.set_state(STATE_ACTIVE);
         break;
       case STATE_ACTIVE:
         timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
-        pomodoro.set_state(STATE_BREAK);
+        //pomodoro.set_state(STATE_BREAK);
         break;
       case STATE_BREAK:
         clear_display();
-        pomodoro.set_state(STATE_TEMP);
+        //pomodoro.set_state(STATE_TEMP);
         timer.reset();
         break;  
       case STATE_TEMP:
         clear_display();
-        pomodoro.set_state(STATE_OFF);
+        //pomodoro.set_state(STATE_OFF);
         timer.reset();
         break;
     }
+
+    pomodoro.button_1();
   }
 
   if (break_btn) {
