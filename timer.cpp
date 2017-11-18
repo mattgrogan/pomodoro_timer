@@ -42,7 +42,11 @@ void Timer::reset() {
 }
 
 int Timer::remaining() {
-  return _duration_secs - _elapsed - ((millis() - _start_time) / 1000);
+  if (_current_state == COUNTDOWN_RUNNING) {
+    return _duration_secs - _elapsed - ((millis() - _start_time) / 1000);
+  } else {
+    return _duration_secs - _elapsed;
+  }
 }
 
 bool Timer::expired() {

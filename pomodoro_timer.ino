@@ -2,7 +2,6 @@
  *  Pomodoro Timer
  *  Matthew Grogan
  *******************/
-#include <Adafruit_LEDBackpack.h>
 #include <Bounce2.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -22,23 +21,17 @@
 #define MAX_BRIGHTNESS 15
 #define MIN_BRIGHTNESS 0
 
-#define FADE_STEP_MS 100
-
 Pomodoro pomodoro;
 
 // Other options
 #define DEBOUNCE_MS 5
 #define MUSIC_SPEED 60
 
-//const int ACTIVE_SECS = 25 * 60;
-//const int BREAK_SECS = 5 * 60;
 const int WARNING_SECS = 2 * 60;
 
-Adafruit_7segment matrix = Adafruit_7segment();
 Adafruit_BME280 bme;
 
 const int TEMP_TIMEOUT_SECS = 1;
-int temp_f;
 
 Bounce active_pin_db = Bounce();
 Bounce break_pin_db = Bounce();
@@ -85,7 +78,6 @@ class IntervalCtrl {
 };
 
 IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
-IntervalCtrl fader(FADE_STEP_MS);
 
 void play(int pin, int *notes, int *durations, int speed) {
   // Play notes and durations at speed through pin
@@ -115,7 +107,8 @@ void setup() {
   
   Serial.begin(9600);
 
-  matrix.begin(MATRIX_I2C_ADDR);
+  //matrix.begin(MATRIX_I2C_ADDR);
+  pomodoro.disp_begin(MATRIX_I2C_ADDR);
 
   // Setup the active button
   pinMode(ACTIVE_PIN, INPUT_PULLUP);
@@ -139,51 +132,7 @@ void setup() {
   }
 
   // Initialize the display
-  clear_display();
-  //current_state = &state_off;
-  
-}
-
-void update_display(int remaining) {
-
-  // Extract the minutes remaining
-  int secs = remaining % 60;
-  int mins = (remaining - secs) / 60;
-
-  // Write each character to the display
-  if ((mins / 10) > 0) {
-     matrix.writeDigitNum(0, (mins / 10));
-  } else {
-    matrix.writeDigitRaw(0, 0);
-  }
-
-  if (remaining < WARNING_SECS && fader.ready() ) {
-    matrix.setBrightness(br.next());
-  } 
-  
-  matrix.writeDigitNum(1, (mins % 10));
-  matrix.drawColon(true);
-  matrix.writeDigitNum(3, (secs / 10));
-  matrix.writeDigitNum(4, (secs % 10));
-  
-  matrix.writeDisplay();
-
-}
-
-
-
-void clear_display() {
-  matrix.clear();
-  matrix.writeDisplay();
-}
-
-void show_temp() {
-  matrix.writeDigitNum(0, (temp_f / 10));
-  matrix.writeDigitNum(1, (temp_f % 10));
-  matrix.writeDigitRaw(3, 0x63);
-  matrix.writeDigitRaw(4, 0x71);
-
-  matrix.writeDisplay();
+  pomodoro.disp_clear();
 }
 
 void loop() {
@@ -196,28 +145,7 @@ void loop() {
   int active_btn = active_pin_db.rose();
   int break_btn = break_pin_db.rose();
 
-  int desired_time = 0;
-
   if (active_btn) {
-    switch(pomodoro.state()) {
-      case STATE_OFF:
-        //timer.set(ACTIVE_SECS);
-        update_display(ACTIVE_SECS);
-        break;
-      case STATE_ACTIVE:
-        //timer.set(BREAK_SECS);
-        update_display(BREAK_SECS);
-        break;
-      case STATE_BREAK:
-        clear_display();
-        //timer.reset();
-        break;  
-      case STATE_TEMP:
-        clear_display();
-        //timer.reset();
-        break;
-    }
-
     pomodoro.button_1();
   }
 
@@ -238,36 +166,10 @@ void loop() {
     }
   }
 
-  if (pomodoro.timer.state() == COUNTDOWN_RUNNING) {
-  
-    update_display(pomodoro.timer.remaining());
-    
-    if (pomodoro.timer.expired()) {
-
-      play_charge();
-
-      if (pomodoro.state() == STATE_ACTIVE) {
-        // Go to break
-        pomodoro.timer.set(BREAK_SECS);
-        update_display(BREAK_SECS);
-        pomodoro.set_state(STATE_BREAK);
-      }
-      else if (pomodoro.state() == STATE_BREAK) {
-        // Go to active
-        pomodoro.timer.set(ACTIVE_SECS);
-        update_display(ACTIVE_SECS);
-        pomodoro.set_state(STATE_ACTIVE);
-      }
-    }
-
-  }
-
-  if (pomodoro.state() == STATE_TEMP) {
-    show_temp();
-  }
+  pomodoro.update();
 
   if (temp_interval.ready()) {
-    temp_f = round(bme.readTemperature() * 9/5 + 32);
+    pomodoro.set_temp(round(bme.readTemperature() * 9/5 + 32));
   }
 
  delay(10);
