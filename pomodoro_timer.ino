@@ -150,20 +150,7 @@ void loop() {
   }
 
   if (break_btn) {
-   
-    switch(pomodoro.timer.state()) {
-      case COUNTDOWN_OFF:
-        break;
-      case COUNTDOWN_READY:
-        pomodoro.timer.start();
-        break;
-      case COUNTDOWN_RUNNING:
-        pomodoro.timer.pause();
-        break;
-      case COUNTDOWN_PAUSED:
-        pomodoro.timer.start();
-        break;
-    }
+    pomodoro.button_2();
   }
 
   pomodoro.update();

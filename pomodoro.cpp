@@ -8,6 +8,10 @@
 #include "Arduino.h"
 #include "pomodoro.h"
 
+/*************************************
+ * Pomodoro object
+ *************************************/
+
 Pomodoro::Pomodoro() {
   _current_state = &_state_off;
 }
@@ -19,8 +23,22 @@ void Pomodoro::disp_begin(int matrix_addr) {
   _m.begin(matrix_addr);
 }
 
-int Pomodoro::state() {
-  return _current_state->name();
+void Pomodoro::reset_timer() {
+  _seq_idx = 0;
+  timer.reset();
+  timer.set(_sequence[_seq_idx]);
+}
+
+void Pomodoro::set_timer() {
+  // Iterate through the Pomodoro Technique
+
+  _seq_idx++;
+
+  if (_seq_idx >= POMODORO_STEPS) {
+    _seq_idx = 0;
+  }
+
+  timer.set(_sequence[_seq_idx]);
 }
 
 void Pomodoro::set_temp(int temp_f) {
@@ -28,17 +46,17 @@ void Pomodoro::set_temp(int temp_f) {
 }
 
 void Pomodoro::set_state(int state) {
-  Serial.println("State change");
+  Serial.print("State change: ");
   Serial.println(state);
   switch(state) {
     case STATE_OFF:
       _current_state = &_state_off;
       break;
+    case STATE_READY:
+      _current_state = &_state_ready;
+      break;
     case STATE_ACTIVE:
       _current_state = &_state_active;
-      break;
-    case STATE_BREAK:
-      _current_state = &_state_break;
       break;
     case STATE_TEMP:
       _current_state = &_state_temp;
@@ -50,8 +68,11 @@ void Pomodoro::button_1() {
   _current_state->button_1(this);
 }
 
+void Pomodoro::button_2() {
+  _current_state->button_2(this);
+}
+
 void Pomodoro::disp_countdown() {
-  Serial.println("Disp countdown");
   int remaining = timer.remaining();
   
   int secs = remaining % 60;
@@ -73,7 +94,6 @@ void Pomodoro::disp_countdown() {
 }
 
 void Pomodoro::disp_temp() {
-  Serial.println("Showing temp");
   _m.writeDigitNum(0, (_temp_f / 10));
   _m.writeDigitNum(1, (_temp_f % 10));
   _m.drawColon(false);
@@ -84,7 +104,6 @@ void Pomodoro::disp_temp() {
 }
 
 void Pomodoro::disp_clear() {
-  Serial.println("Clearing");
   _m.clear();
   _m.writeDisplay();
 }
@@ -94,62 +113,82 @@ void Pomodoro::update() {
   
 }
 
-int State_Off::name() {
-  return STATE_OFF;
-}
+/*************************************
+ * STATE_OFF
+ *************************************/
 
 void State_Off::button_1(Pomodoro *p) {
-  p->timer.set(ACTIVE_SECS);
-  p->set_state(STATE_ACTIVE);
+  // User has chosen to turn on the machine
+  p->reset_timer();
+  p->set_state(STATE_READY);
+}
+
+void State_Off::button_2(Pomodoro *p) {
+  // This button undefined in the OFF state
 }
 
 void State_Off::update(Pomodoro *p) {
-  p->disp_clear();
+  // Do nothing
 }
 
-int State_Active::name() {
-  return STATE_ACTIVE;
+/*************************************
+ * STATE_READY
+ *************************************/
+
+void State_Ready::button_1(Pomodoro *p) {
+  // User has chosen to move to the next item
+  p->reset_timer();
+  p->set_state(STATE_TEMP);
 }
+
+void State_Ready::button_2(Pomodoro *p) {
+  // This button will start the countdown
+  p->timer.start();
+  p->set_state(STATE_ACTIVE);
+}
+
+void State_Ready::update(Pomodoro *p) {
+  p->disp_countdown();
+}
+
+/*************************************
+ * STATE_ACTIVE
+ *************************************/
 
 void State_Active::button_1(Pomodoro *p) {
-  p->timer.set(BREAK_SECS);
-  p->set_state(STATE_BREAK);
+    p->reset_timer();
+    p->set_state(STATE_TEMP);
+}
+
+void State_Active::button_2(Pomodoro *p) {
+  // This button will iterate to next item
+  // in the pomodoro sequence
+  p->set_timer();
+  p->set_state(STATE_READY);
 }
 
 void State_Active::update(Pomodoro *p) {
   p->disp_countdown();
 
-//  if (p->timer.expired()) {
-//    p->disp_clear();
-//    p->timer.reset();
-//  }
+  if (p->timer.expired()) {
+    // Time expired, so enter next item in sequence
+    Serial.println("Timer expired.");
+    p->set_timer();
+    p->set_state(STATE_READY);
+  }
 }
 
-int State_Break::name() {
-  return STATE_BREAK;
-}
-
-void State_Break::button_1(Pomodoro *p) {
-  p->timer.reset();
-  p->set_state(STATE_TEMP);
-}
-
-void State_Break::update(Pomodoro *p) {
-  p->disp_countdown();
-
-//  if (p->timer.expired()) {
-//    p->disp_clear();
-//    p->timer.reset();
-//  }
-}
-
-int State_Temp::name() {
-  return STATE_TEMP;
-}
+/*************************************
+ * STATE_TEMP
+ *************************************/
 
 void State_Temp::button_1(Pomodoro *p) {
-  p->timer.reset();
+  p->disp_clear();
   p->set_state(STATE_OFF);
+}
+
+void State_Temp::button_2(Pomodoro *p) {
+  // This button undefined in the TEMP state
 }
 
 void State_Temp::update(Pomodoro *p) {
