@@ -9,7 +9,7 @@
 
 #include "pitches.h"
 #include "timer.h"
-#include "pomodoro_state.h"
+#include "pomodoro.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -24,11 +24,12 @@
 
 #define FADE_STEP_MS 100
 
-State *current_state;
-State_Off state_off;
-State_Active state_active;
-State_Break state_break;
-State_Temp state_temp;
+Pomodoro pomodoro;
+//State *current_state;
+//State_Off state_off;
+//State_Active state_active;
+//State_Break state_break;
+//State_Temp state_temp;
 
 // Other options
 #define DEBOUNCE_MS 5
@@ -146,7 +147,7 @@ void setup() {
 
   // Initialize the display
   clear_display();
-  current_state = &state_off;
+  //current_state = &state_off;
   
 }
 
@@ -205,25 +206,25 @@ void loop() {
   int desired_time = 0;
 
   if (active_btn) {
-    switch(current_state->name()) {
+    switch(pomodoro.state()) {
       case STATE_OFF:
         timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
-        current_state = &state_active;
+        pomodoro.set_state(STATE_ACTIVE);
         break;
       case STATE_ACTIVE:
         timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
-        current_state = &state_break;
+        pomodoro.set_state(STATE_BREAK);
         break;
       case STATE_BREAK:
         clear_display();
-        current_state = &state_temp;
+        pomodoro.set_state(STATE_TEMP);
         timer.reset();
         break;  
       case STATE_TEMP:
         clear_display();
-        current_state = &state_off;
+        pomodoro.set_state(STATE_OFF);
         timer.reset();
         break;
     }
@@ -254,23 +255,23 @@ void loop() {
 
       play_charge();
 
-      if (current_state->name() == STATE_ACTIVE) {
+      if (pomodoro.state() == STATE_ACTIVE) {
         // Go to break
         timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
-        current_state = &state_break;
+        pomodoro.set_state(STATE_BREAK);
       }
-      else if (current_state->name() == STATE_BREAK) {
+      else if (pomodoro.state() == STATE_BREAK) {
         // Go to active
         timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
-        current_state = &state_active;
+        pomodoro.set_state(STATE_ACTIVE);
       }
     }
 
   }
 
-  if (current_state->name() == STATE_TEMP) {
+  if (pomodoro.state() == STATE_TEMP) {
     show_temp();
   }
 

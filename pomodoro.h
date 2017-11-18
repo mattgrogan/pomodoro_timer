@@ -1,5 +1,5 @@
 /******************************************** 
- *  pomodoro_state.h
+ *  pomodoro.h
  *  
  *  Library for pomodoro timer arduino project
  *  Created by Matthew Grogan 2017
@@ -38,6 +38,20 @@ class State_Break : public State {
 class State_Temp : public State {
   public:
     int name();
+};
+
+class Pomodoro {
+  private:
+    State *_current_state;
+    
+    State_Off _state_off;
+    State_Active _state_active;
+    State_Break _state_break;
+    State_Temp _state_temp;  
+  public:
+    Pomodoro();
+    int state();
+    void set_state(int state);
 };
 
 #endif
