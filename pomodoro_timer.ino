@@ -12,8 +12,8 @@
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
-#define ACTIVE_PIN 4
-#define BREAK_PIN 3
+#define BTN_1_PIN 4
+#define BTN_2_PIN 3
 #define SPEAKER_PIN 9
 #define BMP280_I2C_ADDR 0x76
 
@@ -33,8 +33,8 @@ Adafruit_BME280 bme;
 
 const int TEMP_TIMEOUT_SECS = 1;
 
-Bounce active_pin_db = Bounce();
-Bounce break_pin_db = Bounce();
+Bounce btn_1_db = Bounce();
+Bounce btn_2_db = Bounce();
 
 class BrightnessCtrl {
   int current_brightness = 15;
@@ -110,15 +110,15 @@ void setup() {
   //matrix.begin(MATRIX_I2C_ADDR);
   pomodoro.disp_begin(MATRIX_I2C_ADDR);
 
-  // Setup the active button
-  pinMode(ACTIVE_PIN, INPUT_PULLUP);
-  active_pin_db.attach(ACTIVE_PIN);
-  active_pin_db.interval(DEBOUNCE_MS);
+  // Setup button 1
+  pinMode(BTN_1_PIN, INPUT_PULLUP);
+  btn_1_db.attach(BTN_1_PIN);
+  btn_1_db.interval(DEBOUNCE_MS);
 
-  // Setup the break button
-  pinMode(BREAK_PIN, INPUT_PULLUP);
-  break_pin_db.attach(BREAK_PIN);
-  break_pin_db.interval(DEBOUNCE_MS);
+  // Setup button 2
+  pinMode(BTN_2_PIN, INPUT_PULLUP);
+  btn_2_db.attach(BTN_2_PIN);
+  btn_2_db.interval(DEBOUNCE_MS);
 
   // Set up speaker
   pinMode(SPEAKER_PIN, OUTPUT);
@@ -138,18 +138,14 @@ void setup() {
 void loop() {
 
   // Update the bouncers
-  active_pin_db.update();
-  break_pin_db.update();
+  btn_1_db.update();
+  btn_2_db.update();
 
-  // Read the button state
-  int active_btn = active_pin_db.rose();
-  int break_btn = break_pin_db.rose();
-
-  if (active_btn) {
+  if (btn_1_db.rose()) {
     pomodoro.button_1();
   }
 
-  if (break_btn) {
+  if (btn_2_db.rose()) {
     pomodoro.button_2();
   }
 
