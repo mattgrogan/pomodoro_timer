@@ -8,6 +8,7 @@
 #include <Adafruit_BME280.h>
 
 #include "pitches.h"
+#include "timer.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -22,10 +23,7 @@
 #define STATE_BREAK 1
 #define STATE_TEMP 2
 
-#define COUNTDOWN_OFF 100
-#define COUNTDOWN_READY 101
-#define COUNTDOWN_RUNNING 102
-#define COUNTDOWN_PAUSED 103
+
 
 // Brightness controls 0 - 15 (15=brightest)
 #define MAX_BRIGHTNESS 15
@@ -95,61 +93,6 @@ class IntervalCtrl {
 
 IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
 IntervalCtrl fader(FADE_STEP_MS);
-
-class Timer {
-  int _duration_secs = 0;
-  int _elapsed = 0;
-  int _current_state = COUNTDOWN_OFF;
-  unsigned long _start_time;
-
-  public:
-
-    int set(int duration_secs) {
-      reset();
-      _duration_secs = duration_secs;
-      _current_state = COUNTDOWN_READY;
-      return 0;
-    }
-    
-    int start() {
-      if (_current_state == COUNTDOWN_READY || _current_state == COUNTDOWN_PAUSED) {
-        _start_time = millis();
-        _current_state = COUNTDOWN_RUNNING;
-        return 0;
-      } else {
-        return -1;
-      }
-    }
-
-    int pause() {
-      if (_current_state == COUNTDOWN_RUNNING) {
-        _elapsed += (millis() - _start_time) / 1000;
-        _current_state = COUNTDOWN_PAUSED;
-        return 0;
-      } else {
-        return -1;
-      }
-    }
-
-    void reset() {
-      _elapsed = 0;
-      _duration_secs = 0;
-      _current_state = COUNTDOWN_OFF;
-    }
-
-    int remaining() {
-      return _duration_secs - _elapsed - ((millis() - _start_time) / 1000);
-    }
-
-    bool expired() {
-      return remaining() < 0;
-    }
-
-    int state() {
-      return _current_state;
-    }
-  
-};
 
 Timer timer;
 
