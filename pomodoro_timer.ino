@@ -12,8 +12,8 @@
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
-#define BTN_1_PIN 4
-#define BTN_2_PIN 3
+#define BTN_1_PIN 3
+#define BTN_2_PIN 4
 #define SPEAKER_PIN 9
 #define BMP280_I2C_ADDR 0x76
 
