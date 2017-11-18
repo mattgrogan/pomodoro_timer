@@ -9,6 +9,7 @@
 
 #include "pitches.h"
 #include "timer.h"
+#include "pomodoro_state.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -17,21 +18,17 @@
 #define SPEAKER_PIN 9
 #define BMP280_I2C_ADDR 0x76
 
-// Logic states for application
-#define STATE_OFF -1
-#define STATE_ACTIVE 0
-#define STATE_BREAK 1
-#define STATE_TEMP 2
-
-
-
 // Brightness controls 0 - 15 (15=brightest)
 #define MAX_BRIGHTNESS 15
 #define MIN_BRIGHTNESS 0
 
 #define FADE_STEP_MS 100
 
-int current_state = STATE_OFF;
+State *current_state;
+State_Off state_off;
+State_Active state_active;
+State_Break state_break;
+State_Temp state_temp;
 
 // Other options
 #define DEBOUNCE_MS 5
@@ -149,7 +146,7 @@ void setup() {
 
   // Initialize the display
   clear_display();
-  current_state = STATE_OFF;
+  current_state = &state_off;
   
 }
 
@@ -208,25 +205,25 @@ void loop() {
   int desired_time = 0;
 
   if (active_btn) {
-    switch(current_state) {
+    switch(current_state->name()) {
       case STATE_OFF:
         timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
-        current_state = STATE_ACTIVE;
+        current_state = &state_active;
         break;
       case STATE_ACTIVE:
         timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
-        current_state = STATE_BREAK;
+        current_state = &state_break;
         break;
       case STATE_BREAK:
         clear_display();
-        current_state = STATE_TEMP;
+        current_state = &state_temp;
         timer.reset();
         break;  
       case STATE_TEMP:
         clear_display();
-        current_state = STATE_OFF;
+        current_state = &state_off;
         timer.reset();
         break;
     }
@@ -257,23 +254,23 @@ void loop() {
 
       play_charge();
 
-      if (current_state == STATE_ACTIVE) {
+      if (current_state->name() == STATE_ACTIVE) {
         // Go to break
         timer.set(BREAK_SECS);
         update_display(BREAK_SECS);
-        current_state = STATE_BREAK;
+        current_state = &state_break;
       }
-      else if (current_state == STATE_BREAK) {
+      else if (current_state->name() == STATE_BREAK) {
         // Go to active
         timer.set(ACTIVE_SECS);
         update_display(ACTIVE_SECS);
-        current_state = STATE_ACTIVE;
+        current_state = &state_active;
       }
     }
 
   }
 
-  if (current_state == STATE_TEMP) {
+  if (current_state->name() == STATE_TEMP) {
     show_temp();
   }
 
