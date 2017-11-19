@@ -6,7 +6,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
-#include "pitches.h"
 #include "timer.h"
 #include "pomodoro.h"
 
@@ -31,7 +30,6 @@ Pomodoro pomodoro;
 
 // Other options
 #define DEBOUNCE_MS 5
-#define MUSIC_SPEED 60
 
 const int WARNING_SECS = 2 * 60;
 
@@ -84,30 +82,6 @@ class IntervalCtrl {
 };
 
 IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
-
-void play(int pin, int *notes, int *durations, int speed) {
-  // Play notes and durations at speed through pin
-
-  for (int i = 0; notes[i] != -1; i++) {
-    int note_duration = durations[i] * speed;
-    tone(pin, notes[i], note_duration * 0.95);
-    delay(note_duration);
-  }
-}
-
-void play_charge() {
-  int charge[] = {
-    NOTE_G4, NOTE_C5, NOTE_E5, NOTE_G5, NOTE_E5, NOTE_G5, END
-  };
-  int charged[] {
-    4, 4, 4, 6, 2, 16
-  };
-  
-  int *notes = charge;
-  int *durations = charged;
-  
-  play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
-}
 
 void setup() {
   

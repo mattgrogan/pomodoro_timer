@@ -7,6 +7,39 @@
 
 #include "Arduino.h"
 #include "pomodoro.h"
+#include "pitches.h"
+
+#define SPEAKER_PIN 2
+#define MUSIC_SPEED 60
+
+/*************************************
+ * Play functions that really should
+ * be factored into an object...
+ *************************************/
+ 
+void play(int pin, int *notes, int *durations, int speed) {
+  // Play notes and durations at speed through pin
+
+  for (int i = 0; notes[i] != -1; i++) {
+    int note_duration = durations[i] * speed;
+    tone(pin, notes[i], note_duration * 0.95);
+    delay(note_duration);
+  }
+}
+
+void play_charge() {
+  int charge[] = {
+    NOTE_G4, NOTE_C5, NOTE_E5, NOTE_G5, NOTE_E5, NOTE_G5, END
+  };
+  int charged[] {
+    4, 4, 4, 6, 2, 16
+  };
+  
+  int *notes = charge;
+  int *durations = charged;
+  
+  play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
+}
 
 /*************************************
  * Pomodoro object
@@ -82,7 +115,7 @@ void Pomodoro::button_2() {
 }
 
 void Pomodoro::disp_countdown() {
-  int remaining = timer.remaining();
+  int remaining = max(timer.remaining(), 0);
   
   int secs = remaining % 60;
   int mins = (remaining - secs) / 60;
@@ -98,7 +131,7 @@ void Pomodoro::disp_countdown() {
   _m.drawColon(true);
   _m.writeDigitNum(3, (secs / 10));
   _m.writeDigitNum(4, (secs % 10));
-  
+
   _m.writeDisplay();
 }
 
@@ -119,7 +152,8 @@ void Pomodoro::disp_clock() {
   _m.drawColon(true);
   _m.writeDigitNum(3, (mins / 10));
   _m.writeDigitNum(4, (mins % 10));
-  
+
+ 
   _m.writeDisplay();
 }
 
@@ -234,6 +268,7 @@ void State_Active::update(Pomodoro *p) {
     Serial.println("Timer expired.");
     p->set_timer();
     p->leds_on();
+    play_charge();
     p->set_state(STATE_READY);
   }
 }
