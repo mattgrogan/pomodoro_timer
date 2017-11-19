@@ -9,6 +9,7 @@
 #define Pomodoro_State_h
 
 #include <Adafruit_LEDBackpack.h>
+#include "RTClib.h"
 
 #include "Arduino.h"
 #include "timer.h"
@@ -23,6 +24,7 @@ const int NBR_LEDS = 5;
 #define STATE_READY 0
 #define STATE_ACTIVE 1
 #define STATE_TEMP 2
+#define STATE_CLOCK 3
 
 class Pomodoro; 
 
@@ -61,9 +63,18 @@ class State_Temp : public State {
     void update(Pomodoro *p);
 };
 
+class State_Clock : public State {
+  public:
+    void button_1(Pomodoro *p);
+    void button_2(Pomodoro *p);
+    void update(Pomodoro *p);
+};
+
 class Pomodoro {
   private:
     Adafruit_7segment _m;
+    RTC_DS3231 rtc;
+    
     int _temp_f;
     int _sequence[POMODORO_STEPS] = {ACTIVE_SECS, BREAK_SECS,
                         ACTIVE_SECS, BREAK_SECS,
@@ -79,6 +90,7 @@ class Pomodoro {
     State_Ready _state_ready;
     State_Active _state_active;
     State_Temp _state_temp;
+    State_Clock _state_clock;
   public:
     Timer timer;
     Pomodoro();
@@ -92,6 +104,7 @@ class Pomodoro {
     void disp_begin(int matrix_addr);
     void disp_countdown();
     void disp_temp();
+    void disp_clock();
     void disp_clear();
     void leds_on();
     void leds_off();

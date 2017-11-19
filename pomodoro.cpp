@@ -17,6 +17,12 @@ Pomodoro::Pomodoro() {
 }
 
 void Pomodoro::disp_begin(int matrix_addr) {
+
+  // Connect to RTC
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+  }
+  
   // Set up the matrix display
   Serial.println("Connecting to matrix");
   _m = Adafruit_7segment();
@@ -61,6 +67,9 @@ void Pomodoro::set_state(int state) {
     case STATE_TEMP:
       _current_state = &_state_temp;
       break;
+    case STATE_CLOCK:
+      _current_state = &_state_clock;
+      break;
   }
 }
 
@@ -89,6 +98,27 @@ void Pomodoro::disp_countdown() {
   _m.drawColon(true);
   _m.writeDigitNum(3, (secs / 10));
   _m.writeDigitNum(4, (secs % 10));
+  
+  _m.writeDisplay();
+}
+
+void Pomodoro::disp_clock() {
+  DateTime now = rtc.now();
+  
+  int hour = now.hour();
+  int mins = now.minute();
+
+  // Write each character to the display
+  if ((hour / 10) > 0) {
+     _m.writeDigitNum(0, (hour / 10));
+  } else {
+    _m.writeDigitRaw(0, 0);
+  }
+ 
+  _m.writeDigitNum(1, (hour % 10));
+  _m.drawColon(true);
+  _m.writeDigitNum(3, (mins / 10));
+  _m.writeDigitNum(4, (mins % 10));
   
   _m.writeDisplay();
 }
@@ -213,8 +243,8 @@ void State_Active::update(Pomodoro *p) {
  *************************************/
 
 void State_Temp::button_1(Pomodoro *p) {
-  p->disp_clear();
-  p->set_state(STATE_OFF);
+  //p->disp_clear();
+  p->set_state(STATE_CLOCK);
 }
 
 void State_Temp::button_2(Pomodoro *p) {
@@ -224,3 +254,21 @@ void State_Temp::button_2(Pomodoro *p) {
 void State_Temp::update(Pomodoro *p) {
   p->disp_temp();
 }
+
+/*************************************
+ * STATE_CLOCK
+ *************************************/
+
+ void State_Clock::button_1(Pomodoro *p) {
+  p->disp_clear();
+  p->set_state(STATE_OFF);
+}
+
+void State_Clock::button_2(Pomodoro *p) {
+  // This button undefined in the CLOCK state
+}
+
+void State_Clock::update(Pomodoro *p) {
+  p->disp_clock();
+}
+
