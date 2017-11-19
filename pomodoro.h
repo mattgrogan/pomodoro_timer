@@ -17,6 +17,7 @@ const int ACTIVE_SECS = 25; //25 * 60;
 const int BREAK_SECS = 5; // 5 * 60;
 const int LONG_BREAK_SECS = 15; //15 * 60;
 const int POMODORO_STEPS = 9;
+const int NBR_LEDS = 5;
 
 #define STATE_OFF -1
 #define STATE_READY 0
@@ -70,6 +71,7 @@ class Pomodoro {
                         ACTIVE_SECS, BREAK_SECS,
                         LONG_BREAK_SECS};
     int _seq_idx = 0;
+    int _led_pins[NBR_LEDS];
     
     State *_current_state;
     
@@ -80,6 +82,7 @@ class Pomodoro {
   public:
     Timer timer;
     Pomodoro();
+    void set_leds(int leds[NBR_LEDS]);
     void set_state(int state);
     void set_timer();
     void reset_timer();
@@ -90,6 +93,8 @@ class Pomodoro {
     void disp_countdown();
     void disp_temp();
     void disp_clear();
+    void leds_on();
+    void leds_off();
     void update();
 };
 

@@ -14,7 +14,14 @@
 #define MATRIX_I2C_ADDR 0x70
 #define BTN_1_PIN 3
 #define BTN_2_PIN 4
-#define SPEAKER_PIN 9
+
+#define LED_1_PIN 5
+#define LED_2_PIN 6
+#define LED_3_PIN 7
+#define LED_4_PIN 8
+#define LED_5_PIN 9
+
+#define SPEAKER_PIN 2
 #define BMP280_I2C_ADDR 0x76
 
 // Brightness controls 0 - 15 (15=brightest)
@@ -123,6 +130,18 @@ void setup() {
   // Set up speaker
   pinMode(SPEAKER_PIN, OUTPUT);
   analogWrite(SPEAKER_PIN, 0);
+
+  // Set up LEDs
+  pinMode(LED_1_PIN, OUTPUT);
+  pinMode(LED_2_PIN, OUTPUT);
+  pinMode(LED_3_PIN, OUTPUT);
+  pinMode(LED_4_PIN, OUTPUT);
+  pinMode(LED_5_PIN, OUTPUT);
+
+  int leds[] = {LED_1_PIN, LED_2_PIN, LED_3_PIN, LED_4_PIN, LED_5_PIN};
+
+  pomodoro.set_leds(leds);
+  pomodoro.leds_off();
 
   // Connect to the BMP280
   bool bmp280_status;

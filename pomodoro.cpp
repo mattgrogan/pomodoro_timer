@@ -113,6 +113,38 @@ void Pomodoro::update() {
   
 }
 
+void Pomodoro::set_leds(int leds[]) {
+  for (int j = 0; j < NBR_LEDS; j++) {
+    _led_pins[j] = leds[j];
+    
+  }
+  
+}
+
+void Pomodoro::leds_on() {
+  // Determine which leds should be lit
+  int lit_leds = (_seq_idx - (_seq_idx % 2)) / 2;
+
+  Serial.println(2 % 2);
+
+  Serial.print("Number of lit leds: ");
+  Serial.println(lit_leds);
+
+  for (int i = 0; i < NBR_LEDS; i++) {
+    Serial.print("Writing to led: ");
+    Serial.println(i);
+    digitalWrite(_led_pins[i], i <= lit_leds);
+  }
+  
+}
+
+void Pomodoro::leds_off() {
+  for (int i = 0; i < NBR_LEDS; i++) {
+    digitalWrite(_led_pins[i], LOW);
+  }
+  
+}
+
 /*************************************
  * STATE_OFF
  *************************************/
@@ -120,6 +152,7 @@ void Pomodoro::update() {
 void State_Off::button_1(Pomodoro *p) {
   // User has chosen to turn on the machine
   p->reset_timer();
+  p->leds_on();
   p->set_state(STATE_READY);
 }
 
@@ -137,6 +170,7 @@ void State_Off::update(Pomodoro *p) {
 
 void State_Ready::button_1(Pomodoro *p) {
   // User has chosen to move to the next item
+  p->leds_off();
   p->reset_timer();
   p->set_state(STATE_TEMP);
 }
@@ -156,6 +190,7 @@ void State_Ready::update(Pomodoro *p) {
  *************************************/
 
 void State_Active::button_1(Pomodoro *p) {
+    p->leds_off();
     p->reset_timer();
     p->set_state(STATE_TEMP);
 }
@@ -164,6 +199,7 @@ void State_Active::button_2(Pomodoro *p) {
   // This button will iterate to next item
   // in the pomodoro sequence
   p->set_timer();
+  p->leds_on();
   p->set_state(STATE_READY);
 }
 
@@ -174,6 +210,7 @@ void State_Active::update(Pomodoro *p) {
     // Time expired, so enter next item in sequence
     Serial.println("Timer expired.");
     p->set_timer();
+    p->leds_on();
     p->set_state(STATE_READY);
   }
 }
