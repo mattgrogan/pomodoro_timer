@@ -125,14 +125,7 @@ void Pomodoro::leds_on() {
   // Determine which leds should be lit
   int lit_leds = (_seq_idx - (_seq_idx % 2)) / 2;
 
-  Serial.println(2 % 2);
-
-  Serial.print("Number of lit leds: ");
-  Serial.println(lit_leds);
-
   for (int i = 0; i < NBR_LEDS; i++) {
-    Serial.print("Writing to led: ");
-    Serial.println(i);
     digitalWrite(_led_pins[i], i <= lit_leds);
   }
   
