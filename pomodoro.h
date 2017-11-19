@@ -17,7 +17,7 @@
 const int ACTIVE_SECS = 25; //25 * 60;
 const int BREAK_SECS = 5; // 5 * 60;
 const int LONG_BREAK_SECS = 15; //15 * 60;
-const int POMODORO_STEPS = 9;
+const int POMODORO_STEPS = 8;
 const int NBR_LEDS = 5;
 
 #define STATE_OFF -1
@@ -76,11 +76,12 @@ class Pomodoro {
     RTC_DS3231 rtc;
     
     int _temp_f;
-    int _sequence[POMODORO_STEPS] = {ACTIVE_SECS, BREAK_SECS,
+    int _sequence[POMODORO_STEPS] = {
                         ACTIVE_SECS, BREAK_SECS,
                         ACTIVE_SECS, BREAK_SECS,
                         ACTIVE_SECS, BREAK_SECS,
-                        LONG_BREAK_SECS};
+                        ACTIVE_SECS, LONG_BREAK_SECS};
+                        
     int _seq_idx = 0;
     int _led_pins[NBR_LEDS];
     

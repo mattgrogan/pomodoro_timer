@@ -153,10 +153,10 @@ void Pomodoro::set_leds(int leds[]) {
 
 void Pomodoro::leds_on() {
   // Determine which leds should be lit
-  int lit_leds = (_seq_idx - (_seq_idx % 2)) / 2;
+  int lit_leds = ((_seq_idx + 1) - ((_seq_idx + 1) % 2)) / 2;
 
   for (int i = 0; i < NBR_LEDS; i++) {
-    digitalWrite(_led_pins[i], i <= lit_leds);
+    digitalWrite(_led_pins[i], i < lit_leds);
   }
   
 }
