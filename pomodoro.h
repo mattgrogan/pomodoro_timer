@@ -14,9 +14,9 @@
 #include "Arduino.h"
 #include "timer.h"
 
-const int ACTIVE_SECS = 25; //25 * 60;
-const int BREAK_SECS = 5; // 5 * 60;
-const int LONG_BREAK_SECS = 15; //15 * 60;
+const int ACTIVE_SECS = 25 * 60;
+const int BREAK_SECS = 5 * 60;
+const int LONG_BREAK_SECS = 15 * 60;
 const int POMODORO_STEPS = 8;
 const int NBR_LEDS = 5;
 
