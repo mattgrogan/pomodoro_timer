@@ -32,6 +32,7 @@ class State {
   public:
     virtual void button_1(Pomodoro *p) = 0;
     virtual void button_2(Pomodoro *p) = 0;
+    virtual void proximity_detected(Pomodoro *p) = 0;
     virtual void update(Pomodoro *p) = 0;
 };
 
@@ -39,6 +40,7 @@ class State_Off : public State {
   public:
     void button_1(Pomodoro *p);
     void button_2(Pomodoro *p);
+    void proximity_detected(Pomodoro *p);
     void update(Pomodoro *p);
 };
 
@@ -46,6 +48,7 @@ class State_Ready : public State {
   public:
     void button_1(Pomodoro *p);
     void button_2(Pomodoro *p);
+    void proximity_detected(Pomodoro *p);
     void update(Pomodoro *p);
 };
 
@@ -53,6 +56,7 @@ class State_Active : public State {
   public:
     void button_1(Pomodoro *p);
     void button_2(Pomodoro *p);
+    void proximity_detected(Pomodoro *p);
     void update(Pomodoro *p);
 };
 
@@ -60,6 +64,7 @@ class State_Temp : public State {
   public:
     void button_1(Pomodoro *p);
     void button_2(Pomodoro *p);
+    void proximity_detected(Pomodoro *p);
     void update(Pomodoro *p);
 };
 
@@ -67,6 +72,7 @@ class State_Clock : public State {
   public:
     void button_1(Pomodoro *p);
     void button_2(Pomodoro *p);
+    void proximity_detected(Pomodoro *p);
     void update(Pomodoro *p);
 };
 
@@ -102,6 +108,7 @@ class Pomodoro {
     void set_temp(int temp_f);
     void button_1();
     void button_2();
+    void proximity_detected();
     void disp_begin(int matrix_addr);
     void disp_countdown();
     void disp_temp();

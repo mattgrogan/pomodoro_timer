@@ -8,6 +8,7 @@
 
 #include "timer.h"
 #include "pomodoro.h"
+#include "vcnl4010.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -27,6 +28,7 @@
 #define MIN_BRIGHTNESS 0
 
 Pomodoro pomodoro;
+VCNL4010 prox;
 
 // Other options
 #define DEBOUNCE_MS 5
@@ -124,6 +126,9 @@ void setup() {
 
   // Initialize the display
   pomodoro.disp_clear();
+
+  // Initialize the proximity sensor
+  prox.begin();
 }
 
 void loop() {
@@ -138,6 +143,10 @@ void loop() {
 
   if (btn_2_db.rose()) {
     pomodoro.button_2();
+  }
+
+  if (prox.near()) {
+    pomodoro.proximity_detected();
   }
 
   pomodoro.update();

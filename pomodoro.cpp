@@ -114,6 +114,10 @@ void Pomodoro::button_2() {
   _current_state->button_2(this);
 }
 
+void Pomodoro::proximity_detected() {
+  _current_state->proximity_detected(this);
+}
+
 void Pomodoro::disp_countdown() {
   int remaining = max(timer.remaining(), 0);
   
@@ -221,6 +225,11 @@ void State_Off::button_2(Pomodoro *p) {
   // This button undefined in the OFF state
 }
 
+void State_Off::proximity_detected(Pomodoro *p) {
+  // Turn on and go to the clock
+  p->set_state(STATE_CLOCK);
+}
+
 void State_Off::update(Pomodoro *p) {
   // Do nothing
 }
@@ -240,6 +249,10 @@ void State_Ready::button_2(Pomodoro *p) {
   // This button will start the countdown
   p->timer.start();
   p->set_state(STATE_ACTIVE);
+}
+
+void State_Ready::proximity_detected(Pomodoro *p) {
+  // Do nothing
 }
 
 void State_Ready::update(Pomodoro *p) {
@@ -262,6 +275,10 @@ void State_Active::button_2(Pomodoro *p) {
   p->set_timer();
   p->leds_on();
   p->set_state(STATE_READY);
+}
+
+void State_Active::proximity_detected(Pomodoro *p) {
+  // Do nothing
 }
 
 void State_Active::update(Pomodoro *p) {
@@ -290,6 +307,10 @@ void State_Temp::button_2(Pomodoro *p) {
   // This button undefined in the TEMP state
 }
 
+void State_Temp::proximity_detected(Pomodoro *p) {
+  // Do nothing
+}
+
 void State_Temp::update(Pomodoro *p) {
   p->disp_temp();
 }
@@ -305,6 +326,10 @@ void State_Temp::update(Pomodoro *p) {
 
 void State_Clock::button_2(Pomodoro *p) {
   // This button undefined in the CLOCK state
+}
+
+void State_Clock::proximity_detected(Pomodoro *p) {
+  // Do nothing
 }
 
 void State_Clock::update(Pomodoro *p) {
