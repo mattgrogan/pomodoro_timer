@@ -141,6 +141,10 @@ void Pomodoro::disp_clock() {
   int hour = now.hour();
   int mins = now.minute();
 
+  if (hour > 12) {
+    hour -= 12;
+  }
+
   // Write each character to the display
   if ((hour / 10) > 0) {
      _m.writeDigitNum(0, (hour / 10));
