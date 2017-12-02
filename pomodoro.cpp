@@ -180,6 +180,11 @@ void Pomodoro::disp_clear() {
   _m.writeDisplay();
 }
 
+void Pomodoro::set_brightness(int br) {
+  _m.setBrightness(br);
+  _m.writeDisplay();
+}
+
 void Pomodoro::update() {
   _current_state->update(this);
   

@@ -114,6 +114,7 @@ class Pomodoro {
     void disp_temp();
     void disp_clock();
     void disp_clear();
+    void set_brightness(int br);
     void leds_on();
     void leds_off();
     void update();

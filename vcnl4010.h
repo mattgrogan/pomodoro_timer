@@ -14,6 +14,7 @@ class VCNL4010 {
   public:
     bool begin();
     bool near();
+    uint16_t read_ambient();
   private:
     Adafruit_VCNL4010 vcnl;  
 };

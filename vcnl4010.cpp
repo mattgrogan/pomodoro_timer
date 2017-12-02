@@ -18,3 +18,7 @@ bool VCNL4010::near() {
   return (vcnl.readProximity() > PROXIMITY_THRESHOLD);
 }
 
+uint16_t VCNL4010::read_ambient() {
+  return vcnl.readAmbient();
+}
+
