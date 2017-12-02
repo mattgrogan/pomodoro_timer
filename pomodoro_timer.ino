@@ -9,6 +9,7 @@
 #include "timer.h"
 #include "pomodoro.h"
 #include "vcnl4010.h"
+#include "interval.h"
 
 // Hardware interfaces
 #define MATRIX_I2C_ADDR 0x70
@@ -64,29 +65,7 @@ class BrightnessCtrl {
 
 BrightnessCtrl br;
 
-class IntervalCtrl {
-  unsigned long _last;
-  int _interval_ms;
-
-  public:
-    IntervalCtrl(int interval_ms) {
-      _interval_ms = interval_ms;
-    }
-    bool ready() {
-      // Has the interval passed since the last measurement
-      bool result = false;
-      int time_since = millis() - _last;
-    
-      if (time_since > _interval_ms) {
-        result = true;
-        _last = millis();
-      }
-
-      return result;
-    }
-};
-
-IntervalCtrl temp_interval(TEMP_TIMEOUT_SECS * 1000);
+Interval temp_interval(TEMP_TIMEOUT_SECS * 1000);
 
 void setup() {
   
@@ -153,7 +132,7 @@ void loop() {
   }
 
   // Determine the proper brightness level
-  uint16_t amb = prox.read_ambient();
+  uint16_t amb = prox.ambient();
   int br_level = last_br_level;
   
   if (amb                <   20) { br_level =  0; }
@@ -172,16 +151,13 @@ void loop() {
   if (amb >= 1000 && amb < 1499) { br_level = 13; }
   if (amb >= 1500 && amb < 2499) { br_level = 14; }
   if (amb >= 2500              ) { br_level = 15; }
-  
-  if (br_level != last_br_level) {
+
+  // If the level has changed and there's nothing in front of the sensor...
+  if (br_level != last_br_level && !prox.near()) {
     pomodoro.set_brightness(br_level);
     last_br_level = br_level;
-    Serial.print("Changing brightness to ");
-    Serial.println(br_level);
   }
   
-
-
   pomodoro.update();
 
   if (temp_interval.ready()) {
