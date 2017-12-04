@@ -13,6 +13,7 @@
 
 #include "Arduino.h"
 #include "timer.h"
+#include "vcnl4010.h"
 
 const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
@@ -90,6 +91,7 @@ class Pomodoro {
                         
     int _seq_idx = 0;
     int _led_pins[NBR_LEDS];
+    int _last_br_level = 15;
     
     State *_current_state;
     
@@ -101,6 +103,7 @@ class Pomodoro {
   public:
     Timer timer;
     Pomodoro();
+    VCNL4010 prox;
     void set_leds(int leds[NBR_LEDS]);
     void set_state(int state);
     void set_timer();
@@ -114,6 +117,7 @@ class Pomodoro {
     void disp_temp();
     void disp_clock();
     void disp_clear();
+    void check_brightness();
     void set_brightness(int br);
     void leds_on();
     void leds_off();

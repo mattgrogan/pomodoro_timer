@@ -60,6 +60,9 @@ void Pomodoro::disp_begin(int matrix_addr) {
   Serial.println("Connecting to matrix");
   _m = Adafruit_7segment();
   _m.begin(matrix_addr);
+
+  // Set up proximity and light sensor
+  prox.begin();
 }
 
 void Pomodoro::reset_timer() {
@@ -180,12 +183,51 @@ void Pomodoro::disp_clear() {
   _m.writeDisplay();
 }
 
+void Pomodoro::check_brightness() {
+  
+  // Determine the proper brightness level
+  uint16_t amb = prox.ambient();
+  int br_level = _last_br_level;
+  
+  if (amb                <   20) { br_level =  0; }
+  if (amb >=   20 && amb <   29) { br_level =  1; }
+  if (amb >=   30 && amb <   30) { br_level =  2; }
+  if (amb >=   30 && amb <   49) { br_level =  3; }
+  if (amb >=   50 && amb <   69) { br_level =  4; }
+  if (amb >=   70 && amb <   99) { br_level =  5; }
+  if (amb >=  100 && amb <  199) { br_level =  6; }
+  if (amb >=  200 && amb <  299) { br_level =  7; }
+  if (amb >=  300 && amb <  399) { br_level =  8; }
+  if (amb >=  400 && amb <  499) { br_level =  9; }
+  if (amb >=  500 && amb <  599) { br_level = 10; }
+  if (amb >=  600 && amb <  699) { br_level = 11; }
+  if (amb >=  700 && amb <  999) { br_level = 12; }
+  if (amb >= 1000 && amb < 1499) { br_level = 13; }
+  if (amb >= 1500 && amb < 2499) { br_level = 14; }
+  if (amb >= 2500              ) { br_level = 15; }
+
+  // If the level has changed and there's nothing in front of the sensor...
+  if (br_level != _last_br_level && !prox.near()) {
+    set_brightness(br_level);
+    _last_br_level = br_level;
+  }  
+}
+
 void Pomodoro::set_brightness(int br) {
   _m.setBrightness(br);
   _m.writeDisplay();
 }
 
 void Pomodoro::update() {
+
+  // Check proximity sensor
+   if (prox.near()) {
+    proximity_detected();
+  }
+
+  check_brightness();
+
+  // Run the update
   _current_state->update(this);
   
 }
@@ -231,12 +273,16 @@ void State_Off::button_2(Pomodoro *p) {
 }
 
 void State_Off::proximity_detected(Pomodoro *p) {
-  // Turn on and go to the clock
-  p->set_state(STATE_CLOCK);
+  // do nothing
 }
 
 void State_Off::update(Pomodoro *p) {
-  // Do nothing
+  // Show the clock if there's proximity detected
+  if (p->prox.near()) {
+    p->disp_clock();
+  } else {
+    p->disp_clear();    
+  }
 }
 
 /*************************************
@@ -317,7 +363,12 @@ void State_Temp::proximity_detected(Pomodoro *p) {
 }
 
 void State_Temp::update(Pomodoro *p) {
-  p->disp_temp();
+  // Show the clock if there's proximity detected
+  if (p->prox.near()) {
+    p->disp_clock();
+  } else {
+    p->disp_temp();    
+  }
 }
 
 /*************************************
@@ -338,6 +389,12 @@ void State_Clock::proximity_detected(Pomodoro *p) {
 }
 
 void State_Clock::update(Pomodoro *p) {
-  p->disp_clock();
+  // Show the temp if there's a proximity detected, otherwise show clock
+  if (p->prox.near()) {
+    p->disp_temp();
+  } else {
+    p->disp_clock();    
+  }
+
 }
 

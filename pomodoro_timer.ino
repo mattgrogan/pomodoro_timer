@@ -8,7 +8,6 @@
 
 #include "timer.h"
 #include "pomodoro.h"
-#include "vcnl4010.h"
 #include "interval.h"
 
 // Hardware interfaces
@@ -29,10 +28,6 @@
 #define MIN_BRIGHTNESS 0
 
 Pomodoro pomodoro;
-VCNL4010 prox;
-
-// This is for debugging the brightness level
-int last_br_level = 15;
 
 // Other options
 #define DEBOUNCE_MS 5
@@ -71,8 +66,8 @@ void setup() {
   
   Serial.begin(9600);
 
-  //matrix.begin(MATRIX_I2C_ADDR);
   pomodoro.disp_begin(MATRIX_I2C_ADDR);
+  pomodoro.disp_clear();
 
   // Setup button 1
   pinMode(BTN_1_PIN, INPUT_PULLUP);
@@ -106,11 +101,6 @@ void setup() {
     Serial.println("Could not find a valid BMP280 sensor");
   }
 
-  // Initialize the display
-  pomodoro.disp_clear();
-
-  // Initialize the proximity sensor
-  prox.begin();
 }
 
 void loop() {
@@ -125,37 +115,6 @@ void loop() {
 
   if (btn_2_db.rose()) {
     pomodoro.button_2();
-  }
-
-  if (prox.near()) {
-    pomodoro.proximity_detected();
-  }
-
-  // Determine the proper brightness level
-  uint16_t amb = prox.ambient();
-  int br_level = last_br_level;
-  
-  if (amb                <   20) { br_level =  0; }
-  if (amb >=   20 && amb <   29) { br_level =  1; }
-  if (amb >=   30 && amb <   30) { br_level =  2; }
-  if (amb >=   30 && amb <   49) { br_level =  3; }
-  if (amb >=   50 && amb <   69) { br_level =  4; }
-  if (amb >=   70 && amb <   99) { br_level =  5; }
-  if (amb >=  100 && amb <  199) { br_level =  6; }
-  if (amb >=  200 && amb <  299) { br_level =  7; }
-  if (amb >=  300 && amb <  399) { br_level =  8; }
-  if (amb >=  400 && amb <  499) { br_level =  9; }
-  if (amb >=  500 && amb <  599) { br_level = 10; }
-  if (amb >=  600 && amb <  699) { br_level = 11; }
-  if (amb >=  700 && amb <  999) { br_level = 12; }
-  if (amb >= 1000 && amb < 1499) { br_level = 13; }
-  if (amb >= 1500 && amb < 2499) { br_level = 14; }
-  if (amb >= 2500              ) { br_level = 15; }
-
-  // If the level has changed and there's nothing in front of the sensor...
-  if (br_level != last_br_level && !prox.near()) {
-    pomodoro.set_brightness(br_level);
-    last_br_level = br_level;
   }
   
   pomodoro.update();

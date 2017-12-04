@@ -8,7 +8,7 @@
 #ifndef vcnl4010_h
 #define vcnl4010_h
 
-#define DEFAULT_UPDATE_FREQ_MS 1000
+#define DEFAULT_UPDATE_FREQ_MS 500
 
 #include "Adafruit_VCNL4010.h"
 #include "interval.h"

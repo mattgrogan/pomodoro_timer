@@ -5,7 +5,7 @@
  *  Created by Matthew Grogan 2017
  ********************************************/
 
-#define PROXIMITY_THRESHOLD 3000
+#define PROXIMITY_THRESHOLD 2400
 
 #include "Arduino.h"
 #include "vcnl4010.h"
@@ -40,5 +40,8 @@ uint16_t VCNL4010::read_ambient() {
 }
 
 uint16_t VCNL4010::read_proximity() {
-  return vcnl.readProximity();
+  uint16_t proximity = vcnl.readProximity();
+  Serial.print("Prox: "); Serial.println(proximity);
+  return proximity;
+  //return vcnl.readProximity();
 }
