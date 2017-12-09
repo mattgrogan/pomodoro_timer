@@ -40,8 +40,5 @@ uint16_t VCNL4010::read_ambient() {
 }
 
 uint16_t VCNL4010::read_proximity() {
-  uint16_t proximity = vcnl.readProximity();
-  Serial.print("Prox: "); Serial.println(proximity);
-  return proximity;
-  //return vcnl.readProximity();
+  return vcnl.readProximity();
 }
