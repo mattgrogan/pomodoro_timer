@@ -67,7 +67,7 @@ uint8_t steps[n_steps] = {RIGHT, MID, LEFT};
  *************************************/
 
 Pomodoro::Pomodoro() {
-  _current_state = &_state_off;
+  _current_state = &_state_clock;
 }
 
 void Pomodoro::disp_begin(int matrix_addr) {
@@ -361,9 +361,7 @@ void Pomodoro::test(uint16_t duration_ms) {
 
 void State_Off::button_1(Pomodoro *p) {
   // User has chosen to turn on the machine
-  p->reset_timer();
-  p->leds_on();
-  p->set_state(STATE_READY);
+  p->set_state(STATE_CLOCK);
 }
 
 void State_Off::button_2(Pomodoro *p) {
@@ -448,8 +446,8 @@ void State_Active::update(Pomodoro *p) {
  *************************************/
 
 void State_Temp::button_1(Pomodoro *p) {
-  //p->disp_clear();
-  p->set_state(STATE_CLOCK);
+  p->disp_clear();
+  p->set_state(STATE_OFF);
 }
 
 void State_Temp::button_2(Pomodoro *p) {
@@ -474,8 +472,9 @@ void State_Temp::update(Pomodoro *p) {
  *************************************/
 
  void State_Clock::button_1(Pomodoro *p) {
-  p->disp_clear();
-  p->set_state(STATE_OFF);
+  p->reset_timer();
+  p->leds_on();
+  p->set_state(STATE_READY);
 }
 
 void State_Clock::button_2(Pomodoro *p) {
