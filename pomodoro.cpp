@@ -8,6 +8,7 @@
 #include "Arduino.h"
 #include "pomodoro.h"
 #include "pitches.h"
+#include "animation.h"
 
 #define SPEAKER_PIN 2
 #define MUSIC_SPEED 60
@@ -42,6 +43,26 @@ void play_charge() {
 }
 
 /*************************************
+ * Variables for animation
+ *************************************/
+
+uint16_t decimal[10] = {
+   SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,
+   SEG_B | SEG_C,
+   SEG_A | SEG_B | SEG_G | SEG_E | SEG_D,
+   SEG_A | SEG_B | SEG_G | SEG_C | SEG_D,
+   SEG_B | SEG_C | SEG_F | SEG_G,
+   SEG_A | SEG_F | SEG_G | SEG_C | SEG_D,
+   SEG_A | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G,
+   SEG_A | SEG_B | SEG_C,
+   SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G,
+   SEG_A | SEG_B | SEG_C | SEG_D | SEG_F | SEG_G
+};
+
+const uint8_t n_steps = 3;
+uint8_t steps[n_steps] = {RIGHT, MID, LEFT};
+
+/*************************************
  * Pomodoro object
  *************************************/
 
@@ -63,6 +84,9 @@ void Pomodoro::disp_begin(int matrix_addr) {
 
   // Set up proximity and light sensor
   prox.begin();
+
+  // Set up the matrix pattern
+  _mp.set_pattern(steps, n_steps);
 }
 
 void Pomodoro::reset_timer() {
@@ -173,6 +197,48 @@ void Pomodoro::disp_clock() {
   _m.writeDisplay();
 }
 
+void Pomodoro::disp_clock_anim() {
+  DateTime now = rtc.now();
+  
+  int hour = now.hour();
+  int mins = now.minute();
+
+  if (hour > 12) {
+    hour -= 12;
+  }
+
+  uint8_t digits[SEGMENT_LENGTH] = { 0 };
+
+  digits[0] = decimal[(hour / 10)];
+  digits[1] = decimal[(hour % 10)];
+  digits[2] = decimal[(mins / 10)];
+  digits[3] = decimal[(mins % 10)];
+
+  if ((hour / 10) == 0) {
+    digits[0] = 0x00; // Trim leading zero
+  }
+  
+  if (!_mp.is_done()) {
+    digits[0] = _mp.mask(0, digits[0]);
+    digits[1] = _mp.mask(1, digits[1]);
+    digits[2] = _mp.mask(2, digits[2]);
+    digits[3] = _mp.mask(3, digits[3]);
+  }
+
+
+
+  _m.writeDigitRaw(0, digits[0]);
+  _m.writeDigitRaw(1, digits[1]);
+  _m.drawColon(_mp.digit() < 2 || _mp.is_done());
+  _m.writeDigitRaw(3, digits[2]);
+  _m.writeDigitRaw(4, digits[3]);
+ 
+  _m.writeDisplay();
+
+  if (_mp_interval.ready()) {
+    _mp.next();
+  }
+}
 void Pomodoro::disp_temp() {
   _m.writeDigitNum(0, (_temp_f / 10));
   _m.writeDigitNum(1, (_temp_f % 10));
@@ -260,6 +326,10 @@ void Pomodoro::leds_off() {
   
 }
 
+void Pomodoro::reset_animation() {
+  _mp.first();
+}
+
 /*************************************
  * STATE_OFF
  *************************************/
@@ -276,14 +346,13 @@ void State_Off::button_2(Pomodoro *p) {
 }
 
 void State_Off::proximity_toggle(Pomodoro *p, bool state) {
-  // do nothing
-  Serial.print("Prox toggle to: "); Serial.println(state);
+  p->reset_animation();
 }
 
 void State_Off::update(Pomodoro *p) {
   // Show the clock if there's proximity detected
   if (p->prox.near()) {
-    p->disp_clock();
+    p->disp_clock_anim();
   } else {
     p->disp_clear();    
   }
@@ -389,7 +458,7 @@ void State_Clock::button_2(Pomodoro *p) {
 }
 
 void State_Clock::proximity_toggle(Pomodoro *p, bool state) {
-  // Do nothing
+  p->reset_animation();
 }
 
 void State_Clock::update(Pomodoro *p) {

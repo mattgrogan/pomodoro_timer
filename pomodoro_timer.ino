@@ -101,6 +101,8 @@ void setup() {
     Serial.println("Could not find a valid BMP280 sensor");
   }
 
+  pomodoro.check_brightness();
+
 }
 
 void loop() {
@@ -123,7 +125,7 @@ void loop() {
     pomodoro.set_temp(round(bme.readTemperature() * 9/5 + 32));
   }
 
- delay(10);
+ delay(5);
 
 }
 

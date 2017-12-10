@@ -14,12 +14,16 @@
 #include "Arduino.h"
 #include "timer.h"
 #include "vcnl4010.h"
+#include "animation.h"
+#include "interval.h"
 
 const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
 const int LONG_BREAK_SECS = 15 * 60;
 const int POMODORO_STEPS = 8;
 const int NBR_LEDS = 5;
+
+const int ANIMATION_SPEED = 20;
 
 #define STATE_OFF -1
 #define STATE_READY 0
@@ -80,7 +84,9 @@ class State_Clock : public State {
 class Pomodoro {
   private:
     Adafruit_7segment _m;
+    MatrixPattern _mp;
     RTC_DS3231 rtc;
+    Interval _mp_interval = Interval(ANIMATION_SPEED);
     
     int _temp_f;
     int _sequence[POMODORO_STEPS] = {
@@ -118,12 +124,14 @@ class Pomodoro {
     void disp_countdown();
     void disp_temp();
     void disp_clock();
+    void disp_clock_anim();
     void disp_clear();
     void check_brightness();
     void set_brightness(int br);
     void leds_on();
     void leds_off();
     void update();
+    void reset_animation();
 };
 
 #endif
