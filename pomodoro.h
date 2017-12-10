@@ -135,6 +135,7 @@ class Pomodoro {
     void update();
     void reset_animation();
     void end_animation();
+    void write_display(uint8_t digit_0, uint8_t digit_1, uint8_t digit_2, uint8_t digit_3, bool colon = false);
     void test(uint16_t duration_ms);
 };
 

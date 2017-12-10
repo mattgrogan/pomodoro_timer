@@ -190,32 +190,6 @@ void Pomodoro::disp_clock() {
     hour -= 12;
   }
 
-  // Write each character to the display
-  if ((hour / 10) > 0) {
-     _m.writeDigitNum(0, (hour / 10));
-  } else {
-    _m.writeDigitRaw(0, 0);
-  }
- 
-  _m.writeDigitNum(1, (hour % 10));
-  _m.drawColon(_colon_on);
-  _m.writeDigitNum(3, (mins / 10));
-  _m.writeDigitNum(4, (mins % 10));
-
- 
-  _m.writeDisplay();
-}
-
-void Pomodoro::disp_clock_anim() {
-  DateTime now = rtc.now();
-  
-  int hour = now.hour();
-  int mins = now.minute();
-
-  if (hour > 12) {
-    hour -= 12;
-  }
-
   uint8_t digits[SEGMENT_LENGTH] = { 0 };
 
   digits[0] = decimal[(hour / 10)];
@@ -226,37 +200,38 @@ void Pomodoro::disp_clock_anim() {
   if ((hour / 10) == 0) {
     digits[0] = 0x00; // Trim leading zero
   }
-  
+
+  write_display(digits[0], digits[1], digits[2], digits[3], _colon_on);
+}
+
+void Pomodoro::write_display(uint8_t digit_0, uint8_t digit_1, uint8_t digit_2, uint8_t digit_3, bool colon = false) {
+
   if (!_mp.is_done()) {
-    digits[0] = _mp.mask(0, digits[0]);
-    digits[1] = _mp.mask(1, digits[1]);
-    digits[2] = _mp.mask(2, digits[2]);
-    digits[3] = _mp.mask(3, digits[3]);
+    digit_0 = _mp.mask(0, digit_0);
+    digit_1 = _mp.mask(1, digit_1);
+    digit_2 = _mp.mask(2, digit_2);
+    digit_3 = _mp.mask(3, digit_3);
   }
+  
+  colon = (_mp.digit() < 2 || _mp.is_done()) && colon;
 
+  _m.writeDigitRaw(0, digit_0);
+  _m.writeDigitRaw(1, digit_1);
+  _m.drawColon(colon);
+  _m.writeDigitRaw(3, digit_2);
+  _m.writeDigitRaw(4, digit_3);
 
-  bool draw_colon = (_mp.digit() < 2 || _mp.is_done()) && _colon_on;
-
-  _m.writeDigitRaw(0, digits[0]);
-  _m.writeDigitRaw(1, digits[1]);
-  _m.drawColon(draw_colon);
-  _m.writeDigitRaw(3, digits[2]);
-  _m.writeDigitRaw(4, digits[3]);
- 
   _m.writeDisplay();
-
+  
   if (_mp_interval.ready() && !_mp.is_done()) {
     _mp.next();
   }
 }
-void Pomodoro::disp_temp() {
-  _m.writeDigitNum(0, (_temp_f / 10));
-  _m.writeDigitNum(1, (_temp_f % 10));
-  _m.drawColon(false);
-  _m.writeDigitRaw(3, 0x63);
-  _m.writeDigitRaw(4, 0x71);
 
-  _m.writeDisplay();
+void Pomodoro::disp_temp() {
+
+  write_display(decimal[(_temp_f / 10)], decimal[(_temp_f % 10)], 0x63, 0x71, false);
+
 }
 
 void Pomodoro::disp_clear() {
@@ -394,7 +369,7 @@ void State_Off::proximity_toggle(Pomodoro *p, bool state) {
 void State_Off::update(Pomodoro *p) {
   // Show the clock if there's proximity detected
   if (p->prox.near()) {
-    p->disp_clock_anim();
+    p->disp_clock();
   } else {
     p->disp_clear();    
   }
@@ -474,13 +449,18 @@ void State_Temp::button_2(Pomodoro *p) {
 }
 
 void State_Temp::proximity_toggle(Pomodoro *p, bool state) {
-  p->reset_animation();
+  // Show animation only when proximity is detected
+  if (state) {
+    p->reset_animation();    
+  } else {
+    p->end_animation();
+  }
 }
 
 void State_Temp::update(Pomodoro *p) {
   // Show the clock if there's proximity detected
   if (p->prox.near()) {
-    p->disp_clock_anim();
+    p->disp_clock();
   } else {
     p->disp_temp();    
   }
@@ -514,7 +494,7 @@ void State_Clock::update(Pomodoro *p) {
   if (p->prox.near()) {
     p->disp_temp();
   } else {
-    p->disp_clock_anim();
+    p->disp_clock();
   }
 
 }
