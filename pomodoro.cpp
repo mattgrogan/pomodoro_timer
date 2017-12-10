@@ -453,13 +453,13 @@ void State_Temp::button_2(Pomodoro *p) {
 }
 
 void State_Temp::proximity_toggle(Pomodoro *p, bool state) {
-  // Do nothing
+  p->reset_animation();
 }
 
 void State_Temp::update(Pomodoro *p) {
   // Show the clock if there's proximity detected
   if (p->prox.near()) {
-    p->disp_clock();
+    p->disp_clock_anim();
   } else {
     p->disp_temp();    
   }
