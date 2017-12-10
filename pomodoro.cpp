@@ -235,7 +235,7 @@ void Pomodoro::disp_clock_anim() {
  
   _m.writeDisplay();
 
-  if (_mp_interval.ready()) {
+  if (_mp_interval.ready() && !_mp.is_done()) {
     _mp.next();
   }
 }
@@ -278,7 +278,7 @@ void Pomodoro::check_brightness() {
   if (amb >= 2500              ) { br_level = 15; }
 
   // If the level has changed and there's nothing in front of the sensor...
-  if (br_level != _last_br_level && !prox.near()) {
+  if (br_level != _last_br_level && !_prox_on) {
     set_brightness(br_level);
     _last_br_level = br_level;
   }  
@@ -331,10 +331,6 @@ void Pomodoro::reset_animation() {
 }
 
 void Pomodoro::test(uint16_t duration_ms) {
-  // Light all LEDs
-  for (int i = 0; i < NBR_LEDS; i++) {
-    digitalWrite(_led_pins[i], HIGH);
-  }
 
   //Light Matrix
   for (int j = 0; j <= 5; j++) {
@@ -342,13 +338,21 @@ void Pomodoro::test(uint16_t duration_ms) {
   }
 
   _m.writeDisplay();
-  
 
   delay(duration_ms);
 
-  leds_off();
   _m.clear();
+  _m.writeDisplay();
+
+  // Light all LEDs
+  for (int i = 0; i < NBR_LEDS; i++) {
+    digitalWrite(_led_pins[i], HIGH);
+  }
+
+  delay(duration_ms);
   
+  leds_off();
+
 }
 
 /*************************************
