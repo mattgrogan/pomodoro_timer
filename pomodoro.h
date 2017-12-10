@@ -132,6 +132,7 @@ class Pomodoro {
     void leds_off();
     void update();
     void reset_animation();
+    void test(uint16_t duration_ms);
 };
 
 #endif

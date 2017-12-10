@@ -330,6 +330,27 @@ void Pomodoro::reset_animation() {
   _mp.first();
 }
 
+void Pomodoro::test(uint16_t duration_ms) {
+  // Light all LEDs
+  for (int i = 0; i < NBR_LEDS; i++) {
+    digitalWrite(_led_pins[i], HIGH);
+  }
+
+  //Light Matrix
+  for (int j = 0; j <= 5; j++) {
+    _m.writeDigitRaw(j, 0xFF);
+  }
+
+  _m.writeDisplay();
+  
+
+  delay(duration_ms);
+
+  leds_off();
+  _m.clear();
+  
+}
+
 /*************************************
  * STATE_OFF
  *************************************/

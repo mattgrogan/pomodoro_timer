@@ -101,7 +101,9 @@ void setup() {
     Serial.println("Could not find a valid BMP280 sensor");
   }
 
-  pomodoro.check_brightness();
+  pomodoro.set_brightness(15);
+
+  pomodoro.test(750);
 
 }
 
