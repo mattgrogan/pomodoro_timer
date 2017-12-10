@@ -117,8 +117,13 @@ void Pomodoro::button_2() {
   _current_state->button_2(this);
 }
 
-void Pomodoro::proximity_detected() {
-  _current_state->proximity_detected(this);
+void Pomodoro::proximity_status(bool prox_on) {
+
+  // Toggle the proximity detector
+  if (_prox_on != prox_on) {
+    _prox_on = prox_on;
+    _current_state->proximity_toggle(this, prox_on);
+  }
 }
 
 void Pomodoro::disp_countdown() {
@@ -221,9 +226,7 @@ void Pomodoro::set_brightness(int br) {
 void Pomodoro::update() {
 
   // Check proximity sensor
-   if (prox.near()) {
-    proximity_detected();
-  }
+  proximity_status(prox.near());
 
   check_brightness();
 
@@ -272,8 +275,9 @@ void State_Off::button_2(Pomodoro *p) {
   // This button undefined in the OFF state
 }
 
-void State_Off::proximity_detected(Pomodoro *p) {
+void State_Off::proximity_toggle(Pomodoro *p, bool state) {
   // do nothing
+  Serial.print("Prox toggle to: "); Serial.println(state);
 }
 
 void State_Off::update(Pomodoro *p) {
@@ -302,7 +306,7 @@ void State_Ready::button_2(Pomodoro *p) {
   p->set_state(STATE_ACTIVE);
 }
 
-void State_Ready::proximity_detected(Pomodoro *p) {
+void State_Ready::proximity_toggle(Pomodoro *p, bool state) {
   // Do nothing
 }
 
@@ -328,7 +332,7 @@ void State_Active::button_2(Pomodoro *p) {
   p->set_state(STATE_READY);
 }
 
-void State_Active::proximity_detected(Pomodoro *p) {
+void State_Active::proximity_toggle(Pomodoro *p, bool state) {
   // Do nothing
 }
 
@@ -358,7 +362,7 @@ void State_Temp::button_2(Pomodoro *p) {
   // This button undefined in the TEMP state
 }
 
-void State_Temp::proximity_detected(Pomodoro *p) {
+void State_Temp::proximity_toggle(Pomodoro *p, bool state) {
   // Do nothing
 }
 
@@ -384,7 +388,7 @@ void State_Clock::button_2(Pomodoro *p) {
   // This button undefined in the CLOCK state
 }
 
-void State_Clock::proximity_detected(Pomodoro *p) {
+void State_Clock::proximity_toggle(Pomodoro *p, bool state) {
   // Do nothing
 }
 
@@ -393,7 +397,7 @@ void State_Clock::update(Pomodoro *p) {
   if (p->prox.near()) {
     p->disp_temp();
   } else {
-    p->disp_clock();    
+    p->disp_clock();
   }
 
 }
