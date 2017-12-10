@@ -65,6 +65,7 @@ void MatrixPattern::set_pattern(uint8_t *steps, uint8_t n_steps) {
 void MatrixPattern::first() {
   _index = 3;
   _digits[_index].first();
+  _end = false;
 }
 
 void MatrixPattern::next() {
@@ -80,8 +81,12 @@ void MatrixPattern::next() {
   } 
 }
 
+void MatrixPattern::end() {
+  _end = true;
+}
+
 bool MatrixPattern::is_done() {
-  return _index < 0; // SEGMENT_LENGTH;
+  return (_index < 0 || _end);
 }
 
 uint8_t MatrixPattern::mask(uint8_t digit, uint8_t bitmap) {

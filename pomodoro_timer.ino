@@ -66,9 +66,6 @@ void setup() {
   
   Serial.begin(9600);
 
-  pomodoro.disp_begin(MATRIX_I2C_ADDR);
-  pomodoro.disp_clear();
-
   // Setup button 1
   pinMode(BTN_1_PIN, INPUT_PULLUP);
   btn_1_db.attach(BTN_1_PIN);
@@ -94,16 +91,15 @@ void setup() {
   pomodoro.set_leds(leds);
   pomodoro.leds_off();
 
+  pomodoro.disp_begin(MATRIX_I2C_ADDR);
+  pomodoro.disp_clear();
+
   // Connect to the BMP280
   bool bmp280_status;
   bmp280_status = bme.begin(BMP280_I2C_ADDR);
   if (!bmp280_status) {
     Serial.println("Could not find a valid BMP280 sensor");
   }
-
-  pomodoro.set_brightness(15);
-
-  pomodoro.test(750);
 
 }
 

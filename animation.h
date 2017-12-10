@@ -42,12 +42,14 @@ class Pattern {
 class MatrixPattern {
   private:
     Pattern _digits[SEGMENT_LENGTH];
+    bool _end = false;
     int _index = 3;
     
   public:
     void set_pattern(uint8_t *steps, uint8_t n_steps);
     void first();
     void next();
+    void end();
     bool is_done();
     uint8_t mask(uint8_t digit, uint8_t bitmap);
     uint8_t digit();
