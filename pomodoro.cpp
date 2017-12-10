@@ -189,7 +189,7 @@ void Pomodoro::disp_clock() {
   }
  
   _m.writeDigitNum(1, (hour % 10));
-  _m.drawColon(true);
+  _m.drawColon(_colon_on);
   _m.writeDigitNum(3, (mins / 10));
   _m.writeDigitNum(4, (mins % 10));
 
@@ -226,10 +226,11 @@ void Pomodoro::disp_clock_anim() {
   }
 
 
+  bool draw_colon = (_mp.digit() < 2 || _mp.is_done()) && _colon_on;
 
   _m.writeDigitRaw(0, digits[0]);
   _m.writeDigitRaw(1, digits[1]);
-  _m.drawColon(_mp.digit() < 2 || _mp.is_done());
+  _m.drawColon(draw_colon);
   _m.writeDigitRaw(3, digits[2]);
   _m.writeDigitRaw(4, digits[3]);
  
@@ -295,6 +296,11 @@ void Pomodoro::update() {
   proximity_status(prox.near());
 
   check_brightness();
+
+  // Colon blinks every second
+  if (_colon_interval.ready()) {
+    _colon_on = !_colon_on;
+  }
 
   // Run the update
   _current_state->update(this);

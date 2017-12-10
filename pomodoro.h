@@ -87,6 +87,8 @@ class Pomodoro {
     MatrixPattern _mp;
     RTC_DS3231 rtc;
     Interval _mp_interval = Interval(ANIMATION_SPEED);
+    Interval _colon_interval = Interval(1000);
+    bool _colon_on = true;
     
     int _temp_f;
     int _sequence[POMODORO_STEPS] = {
