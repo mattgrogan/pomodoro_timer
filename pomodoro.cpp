@@ -165,19 +165,19 @@ void Pomodoro::disp_countdown() {
   int secs = remaining % 60;
   int mins = (remaining - secs) / 60;
 
-  // Write each character to the display
-  if ((mins / 10) > 0) {
-     _m.writeDigitNum(0, (mins / 10));
-  } else {
-    _m.writeDigitRaw(0, 0);
-  }
- 
-  _m.writeDigitNum(1, (mins % 10));
-  _m.drawColon(true);
-  _m.writeDigitNum(3, (secs / 10));
-  _m.writeDigitNum(4, (secs % 10));
+  uint8_t digits[SEGMENT_LENGTH] = { 0 };
 
-  _m.writeDisplay();
+  digits[0] = decimal[(mins / 10)];
+  digits[1] = decimal[(mins % 10)];
+  digits[2] = decimal[(secs / 10)];
+  digits[3] = decimal[(secs % 10)];
+
+  if ((mins / 10) == 0) {
+    digits[0] = 0x00; // Trim leading zero
+  }
+
+  write_display(digits[0], digits[1], digits[2], digits[3], true);
+  
 }
 
 void Pomodoro::disp_clock() {
@@ -431,6 +431,7 @@ void State_Active::update(Pomodoro *p) {
     p->set_timer();
     p->leds_on();
     play_charge();
+    p->reset_animation();  
     p->set_state(STATE_READY);
   }
 }
