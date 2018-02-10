@@ -72,7 +72,7 @@ Pomodoro::Pomodoro() {
 
 void Pomodoro::disp_begin(int matrix_addr) {
 
-  // Connect to RTC
+  Serial.println("Connecting to RTC");
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
   }
@@ -82,8 +82,12 @@ void Pomodoro::disp_begin(int matrix_addr) {
   _m = Adafruit_7segment();
   _m.begin(matrix_addr);
 
+  Serial.println("Setting up proximity and light sensor");
+
   // Set up proximity and light sensor
   prox.begin();
+
+  Serial.println("Complete");
 
   // Set up the matrix pattern
   _mp.set_pattern(steps, n_steps);

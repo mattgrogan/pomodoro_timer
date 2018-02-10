@@ -65,6 +65,7 @@ Interval temp_interval(TEMP_TIMEOUT_SECS * 1000);
 void setup() {
   
   Serial.begin(9600);
+  Serial.println("Starting Pomodoro Timer...");
 
   // Setup button 1
   pinMode(BTN_1_PIN, INPUT_PULLUP);
@@ -80,6 +81,8 @@ void setup() {
   pinMode(SPEAKER_PIN, OUTPUT);
   analogWrite(SPEAKER_PIN, 0);
 
+  Serial.println("Testing LEDs");
+
   // Set up LEDs
   pinMode(LED_1_PIN, OUTPUT);
   pinMode(LED_2_PIN, OUTPUT);
@@ -91,8 +94,12 @@ void setup() {
   pomodoro.set_leds(leds);
   pomodoro.leds_off();
 
+  Serial.println("Setting up Matrix");
+
   pomodoro.disp_begin(MATRIX_I2C_ADDR);
   pomodoro.disp_clear();
+
+  Serial.println("Connecting to temperature sensor");
 
   // Connect to the BMP280
   bool bmp280_status;
@@ -100,6 +107,8 @@ void setup() {
   if (!bmp280_status) {
     Serial.println("Could not find a valid BMP280 sensor");
   }
+
+  Serial.println("Setup complete");
 
 }
 

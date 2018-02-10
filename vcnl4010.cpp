@@ -5,7 +5,7 @@
  *  Created by Matthew Grogan 2017
  ********************************************/
 
-#define PROXIMITY_THRESHOLD 2400
+#define PROXIMITY_THRESHOLD 3000
 
 #include "Arduino.h"
 #include "vcnl4010.h"
