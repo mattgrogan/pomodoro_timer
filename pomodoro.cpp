@@ -143,6 +143,11 @@ void Pomodoro::set_state(int state) {
     case STATE_CLOCK:
       _current_state = &_state_clock;
       break;
+    case STATE_SETHOUR:
+      _current_state = &_state_sethour;
+      break;
+    case STATE_SETMIN:
+      _current_state = &_state_setmin;
   }
 }
 
@@ -482,7 +487,8 @@ void State_Temp::update(Pomodoro *p) {
 }
 
 void State_Clock::button_2(Pomodoro *p) {
-  // This button undefined in the CLOCK state
+  Serial.println("Setting state to STATE_SETHOUR");
+  p->set_state(STATE_SETHOUR);
 }
 
 void State_Clock::proximity_toggle(Pomodoro *p, bool state) {
@@ -502,5 +508,50 @@ void State_Clock::update(Pomodoro *p) {
     p->disp_clock();
   }
 
+}
+
+/*************************************
+ * STATE_SETHOUR
+ *************************************/
+
+void State_SetHour::button_1(Pomodoro *p) {
+  // Save hour (if updated) and move to set min
+  Serial.println("Setting state to STATE_SETMIN");
+  p->set_state(STATE_SETMIN);
+}
+
+void State_SetHour::button_2(Pomodoro *p) {
+  // Increment the hour by one, loop when > 12
+}
+
+void State_SetHour::proximity_toggle(Pomodoro *p, bool state) {
+  // Do nothing
+}
+
+void State_SetHour::update(Pomodoro *p) {
+  // Blink
+
+}
+
+/*************************************
+ * STATE_SETMIN
+ *************************************/
+
+ void State_SetMin::button_1(Pomodoro *p) {
+  // Save min (if updated) and move to clock
+  Serial.println("Setting state to STATE_CLOCK");
+  p->set_state(STATE_CLOCK);
+}
+
+void State_SetMin::button_2(Pomodoro *p) {
+  // Increment the minute by one, loop when > 59
+}
+
+void State_SetMin::proximity_toggle(Pomodoro *p, bool state) {
+  // Do nothing
+}
+
+void State_SetMin::update(Pomodoro *p) {
+  // Blink
 }
 

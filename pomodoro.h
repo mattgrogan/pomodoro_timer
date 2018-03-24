@@ -30,6 +30,8 @@ const int ANIMATION_SPEED = 20;
 #define STATE_ACTIVE 1
 #define STATE_TEMP 2
 #define STATE_CLOCK 3
+#define STATE_SETHOUR 4
+#define STATE_SETMIN 5
 
 class Pomodoro; 
 
@@ -81,6 +83,22 @@ class State_Clock : public State {
     void update(Pomodoro *p);
 };
 
+class State_SetMin : public State {
+  public:
+    void button_1(Pomodoro *p);
+    void button_2(Pomodoro *p);
+    void proximity_toggle(Pomodoro *p, bool state);
+    void update(Pomodoro *p);
+};
+
+class State_SetHour : public State {
+  public:
+    void button_1(Pomodoro *p);
+    void button_2(Pomodoro *p);
+    void proximity_toggle(Pomodoro *p, bool state);
+    void update(Pomodoro *p);
+};
+
 class Pomodoro {
   private:
     Adafruit_7segment _m;
@@ -110,6 +128,8 @@ class Pomodoro {
     State_Active _state_active;
     State_Temp _state_temp;
     State_Clock _state_clock;
+    State_SetHour _state_sethour;
+    State_SetMin _state_setmin;
   public:
     Timer timer;
     Pomodoro();
