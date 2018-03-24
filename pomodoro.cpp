@@ -79,8 +79,8 @@ void Pomodoro::disp_begin(int matrix_addr) {
   
   // Set up the matrix display
   Serial.println("Connecting to matrix");
-  _m = Adafruit_7segment();
-  _m.begin(matrix_addr);
+
+  disp.begin(matrix_addr);
 
   Serial.println("Setting up proximity and light sensor");
 
@@ -93,13 +93,13 @@ void Pomodoro::disp_begin(int matrix_addr) {
   _mp.set_pattern(steps, n_steps);
 
   // Start at max brightness
-  set_brightness(15);
+  disp.set_brightness(15);
 
   // Run test sequence
   test(750);
 
   // Set up the animation
-  reset_animation();
+  disp.reset_animation();
 }
 
 void Pomodoro::reset_timer() {
@@ -185,12 +185,11 @@ void Pomodoro::disp_countdown() {
     digits[0] = 0x00; // Trim leading zero
   }
 
-  write_display(digits[0], digits[1], digits[2], digits[3], true);
+  disp.write_display(digits[0], digits[1], digits[2], digits[3], true);
   
 }
 
 void Pomodoro::disp_clock() {
-  //DateTime now = rtc.now();
   
   int hour = clock.hour();
   int mins = clock.minute();
@@ -210,42 +209,18 @@ void Pomodoro::disp_clock() {
     digits[0] = 0x00; // Trim leading zero
   }
 
-  write_display(digits[0], digits[1], digits[2], digits[3], _colon_on);
-}
-
-void Pomodoro::write_display(uint8_t digit_0, uint8_t digit_1, uint8_t digit_2, uint8_t digit_3, bool colon = false) {
-
-  if (!_mp.is_done()) {
-    digit_0 = _mp.mask(0, digit_0);
-    digit_1 = _mp.mask(1, digit_1);
-    digit_2 = _mp.mask(2, digit_2);
-    digit_3 = _mp.mask(3, digit_3);
-  }
-  
-  colon = (_mp.digit() < 2 || _mp.is_done()) && colon;
-
-  _m.writeDigitRaw(0, digit_0);
-  _m.writeDigitRaw(1, digit_1);
-  _m.drawColon(colon);
-  _m.writeDigitRaw(3, digit_2);
-  _m.writeDigitRaw(4, digit_3);
-
-  _m.writeDisplay();
-  
-  if (_mp_interval.ready() && !_mp.is_done()) {
-    _mp.next();
-  }
+  disp.write_display(digits[0], digits[1], digits[2], digits[3], _colon_on);
 }
 
 void Pomodoro::disp_temp() {
 
-  write_display(decimal[(_temp_f / 10)], decimal[(_temp_f % 10)], 0x63, 0x71, false);
+  disp.write_display(decimal[(_temp_f / 10)], decimal[(_temp_f % 10)], 0x63, 0x71, false);
 
 }
 
 void Pomodoro::disp_clear() {
-  _m.clear();
-  _m.writeDisplay();
+  disp.clear();
+  disp.writeDisplay();
 }
 
 void Pomodoro::check_brightness() {
@@ -273,14 +248,9 @@ void Pomodoro::check_brightness() {
 
   // If the level has changed and there's nothing in front of the sensor...
   if (br_level != _last_br_level && !_prox_on) {
-    set_brightness(br_level);
+    disp.set_brightness(br_level);
     _last_br_level = br_level;
   }  
-}
-
-void Pomodoro::set_brightness(int br) {
-  _m.setBrightness(br);
-  _m.writeDisplay();
 }
 
 void Pomodoro::update() {
@@ -325,22 +295,17 @@ void Pomodoro::leds_off() {
   
 }
 
-void Pomodoro::reset_animation() {
-  _mp.first();
-}
-
-void Pomodoro::end_animation() {
-  _mp.end();
-}
+//void Pomodoro::reset_animation() {
+//  _mp.first();
+//}
+//
+//void Pomodoro::end_animation() {
+//  _mp.end();
+//}
 
 void Pomodoro::test(uint16_t duration_ms) {
 
-  //Light Matrix
-  for (int j = 0; j <= 5; j++) {
-    _m.writeDigitRaw(j, 0xFF);
-  }
-
-  _m.writeDisplay();
+  disp.all_on();
 
   delay(duration_ms);
 
@@ -353,8 +318,8 @@ void Pomodoro::test(uint16_t duration_ms) {
   delay(duration_ms);
   
   leds_off();
-  _m.clear();
-  _m.writeDisplay();
+  disp.clear();
+  disp.writeDisplay();
 }
 
 /*************************************
@@ -372,7 +337,7 @@ void State_Off::button_2(Pomodoro *p) {
 
 void State_Off::proximity_toggle(Pomodoro *p, bool state) {
   Serial.println("Resetting animation");
-  p->reset_animation();
+  p->disp.reset_animation();
 }
 
 void State_Off::update(Pomodoro *p) {
@@ -440,7 +405,7 @@ void State_Active::update(Pomodoro *p) {
     p->set_timer();
     p->leds_on();
     play_charge();
-    p->reset_animation();  
+    p->disp.reset_animation();  
     p->set_state(STATE_READY);
   }
 }
@@ -461,9 +426,9 @@ void State_Temp::button_2(Pomodoro *p) {
 void State_Temp::proximity_toggle(Pomodoro *p, bool state) {
   // Show animation only when proximity is detected
   if (state) {
-    p->reset_animation();    
+    p->disp.reset_animation();    
   } else {
-    p->end_animation();
+    p->disp.end_animation();
   }
 }
 
@@ -494,9 +459,9 @@ void State_Clock::button_2(Pomodoro *p) {
 void State_Clock::proximity_toggle(Pomodoro *p, bool state) {
   // Show animation only when proximity is detected
   if (state) {
-    p->reset_animation();    
+    p->disp.reset_animation();    
   } else {
-    p->end_animation();
+    p->disp.end_animation();
   }
 }
 

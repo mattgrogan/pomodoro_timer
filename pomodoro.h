@@ -8,23 +8,19 @@
 #ifndef Pomodoro_State_h
 #define Pomodoro_State_h
 
-#include <Adafruit_LEDBackpack.h>
-
-
 #include "Arduino.h"
 #include "timer.h"
 #include "vcnl4010.h"
-#include "animation.h"
 #include "interval.h"
 #include "clock.h"
+#include "display.h"
+#include "animation.h"
 
 const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
 const int LONG_BREAK_SECS = 15 * 60;
 const int POMODORO_STEPS = 8;
 const int NBR_LEDS = 5;
-
-const int ANIMATION_SPEED = 20;
 
 #define STATE_OFF -1
 #define STATE_READY 0
@@ -102,10 +98,7 @@ class State_SetHour : public State {
 
 class Pomodoro {
   private:
-    Adafruit_7segment _m;
-    MatrixPattern _mp;
-    //Clock _clock = Clock();
-    Interval _mp_interval = Interval(ANIMATION_SPEED);
+    
     Interval _colon_interval = Interval(1000);
     bool _colon_on = true;
     
@@ -132,6 +125,7 @@ class Pomodoro {
     State_SetHour _state_sethour;
     State_SetMin _state_setmin;
   public:
+    Display disp;
     Clock clock = Clock();
     Timer timer;
     Pomodoro();
@@ -150,13 +144,9 @@ class Pomodoro {
     void disp_clock();
     void disp_clear();
     void check_brightness();
-    void set_brightness(int br);
     void leds_on();
     void leds_off();
     void update();
-    void reset_animation();
-    void end_animation();
-    void write_display(uint8_t digit_0, uint8_t digit_1, uint8_t digit_2, uint8_t digit_3, bool colon = false);
     void test(uint16_t duration_ms);
 };
 
