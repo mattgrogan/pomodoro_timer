@@ -13,7 +13,7 @@
 #include "animation.h"
 #include "interval.h"
 
-#define ANIMATION_SPEED 1000
+#define ANIMATION_SPEED 20
 #define MAX_BRIGHTNESS 15
 
 class Display {
@@ -29,7 +29,7 @@ class Display {
     void write_display(uint8_t digit_0, uint8_t digit_1, uint8_t digit_2, uint8_t digit_3, bool colon = false);
     void end_animation();
     void reset_animation();
-    void set_pattern(uint8_t steps, uint8_t n_steps);
+    void set_pattern();
 
     // These are for refactor only. They delegate to the Adafruit 7Segment object
     void writeDigitRaw(uint8_t n, uint16_t bitmask);

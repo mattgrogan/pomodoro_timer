@@ -59,8 +59,8 @@ uint16_t decimal[10] = {
    SEG_A | SEG_B | SEG_C | SEG_D | SEG_F | SEG_G
 };
 
-const uint8_t n_steps = 3;
-uint8_t steps[n_steps] = {RIGHT, MID, LEFT};
+//const uint8_t n_steps = 3;
+//uint8_t steps[n_steps] = {RIGHT, MID, LEFT};
 
 /*************************************
  * Pomodoro object
@@ -90,7 +90,7 @@ void Pomodoro::disp_begin(int matrix_addr) {
   Serial.println("Complete");
 
   // Set up the matrix pattern
-  disp.set_pattern(steps, n_steps);
+  disp.set_pattern();
 
   // Start at max brightness
   disp.set_brightness(15);

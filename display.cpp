@@ -63,7 +63,9 @@ void Display::reset_animation() {
   _mp.first();
 }
 
-void Display::set_pattern(uint8_t steps, uint8_t n_steps) {
+void Display::set_pattern() {
+  const uint8_t n_steps = 3;
+  uint8_t steps[n_steps] = {RIGHT, MID, LEFT};
   _mp.set_pattern(steps, n_steps);
 }
 
