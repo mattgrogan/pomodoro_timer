@@ -73,7 +73,7 @@ Pomodoro::Pomodoro() {
 void Pomodoro::disp_begin(int matrix_addr) {
 
   Serial.println("Connecting to RTC");
-  if (! rtc.begin()) {
+  if (! clock.begin()) {
     Serial.println("Couldn't find RTC");
   }
   
@@ -190,10 +190,10 @@ void Pomodoro::disp_countdown() {
 }
 
 void Pomodoro::disp_clock() {
-  DateTime now = rtc.now();
+  //DateTime now = rtc.now();
   
-  int hour = now.hour();
-  int mins = now.minute();
+  int hour = clock.hour();
+  int mins = clock.minute();
 
   if (hour > 12) {
     hour -= 12;
@@ -355,32 +355,6 @@ void Pomodoro::test(uint16_t duration_ms) {
   leds_off();
   _m.clear();
   _m.writeDisplay();
-}
-
-void Pomodoro::add_hour() {
-  Serial.println("Adding one hour");
-  DateTime now = rtc.now();
-
-  int new_hour = now.hour() + 1;
-  new_hour = new_hour <= 24 ? new_hour : 1;
-
-  Serial.println("Setting hour to: ");
-  Serial.println(new_hour);
-  
-  rtc.adjust(DateTime(now.year(), now.month(), now.day(), new_hour, now.minute(), now.second()));
-}
-
-void Pomodoro::add_min() {
-  Serial.println("Adding one minute");
-
-  DateTime now = rtc.now();
-  int new_min = now.minute() + 1;
-  new_min = new_min < 60 ? new_min : 0;
-
-  Serial.println("Setting minute to: ");
-  Serial.println(new_min);
-
-  rtc.adjust(DateTime(now.year(), now.month(), now.day(), now.hour(), new_min, now.second()));
 }
 
 /*************************************
@@ -548,7 +522,7 @@ void State_SetHour::button_1(Pomodoro *p) {
 
 void State_SetHour::button_2(Pomodoro *p) {
   // Increment the hour by one, loop when > 23
-  p->add_hour();
+  p->clock.increment_hour();
 }
 
 void State_SetHour::proximity_toggle(Pomodoro *p, bool state) {
@@ -572,7 +546,7 @@ void State_SetHour::update(Pomodoro *p) {
 
 void State_SetMin::button_2(Pomodoro *p) {
   // Increment the minute by one, loop when > 59
-  p->add_min();
+  p->clock.increment_minute();
 }
 
 void State_SetMin::proximity_toggle(Pomodoro *p, bool state) {

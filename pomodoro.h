@@ -9,13 +9,14 @@
 #define Pomodoro_State_h
 
 #include <Adafruit_LEDBackpack.h>
-#include "RTClib.h"
+
 
 #include "Arduino.h"
 #include "timer.h"
 #include "vcnl4010.h"
 #include "animation.h"
 #include "interval.h"
+#include "clock.h"
 
 const int ACTIVE_SECS = 25 * 60;
 const int BREAK_SECS = 5 * 60;
@@ -103,7 +104,7 @@ class Pomodoro {
   private:
     Adafruit_7segment _m;
     MatrixPattern _mp;
-    RTC_DS3231 rtc;
+    //Clock _clock = Clock();
     Interval _mp_interval = Interval(ANIMATION_SPEED);
     Interval _colon_interval = Interval(1000);
     bool _colon_on = true;
@@ -131,6 +132,7 @@ class Pomodoro {
     State_SetHour _state_sethour;
     State_SetMin _state_setmin;
   public:
+    Clock clock = Clock();
     Timer timer;
     Pomodoro();
     VCNL4010 prox;
@@ -147,8 +149,6 @@ class Pomodoro {
     void disp_temp();
     void disp_clock();
     void disp_clear();
-    void add_hour();
-    void add_min();
     void check_brightness();
     void set_brightness(int br);
     void leds_on();
@@ -159,5 +159,7 @@ class Pomodoro {
     void write_display(uint8_t digit_0, uint8_t digit_1, uint8_t digit_2, uint8_t digit_3, bool colon = false);
     void test(uint16_t duration_ms);
 };
+
+
 
 #endif
