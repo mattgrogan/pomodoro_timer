@@ -146,7 +146,6 @@ class Pomodoro {
     void disp_countdown();
     void disp_temp();
     void disp_clock();
-    void disp_clock_anim();
     void disp_clear();
     void add_hour();
     void add_min();
