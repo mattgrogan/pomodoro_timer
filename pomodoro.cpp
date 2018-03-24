@@ -90,7 +90,7 @@ void Pomodoro::disp_begin(int matrix_addr) {
   Serial.println("Complete");
 
   // Set up the matrix pattern
-  _mp.set_pattern(steps, n_steps);
+  disp.set_pattern(steps, n_steps);
 
   // Start at max brightness
   disp.set_brightness(15);
