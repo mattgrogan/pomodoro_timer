@@ -148,6 +148,8 @@ class Pomodoro {
     void disp_clock();
     void disp_clock_anim();
     void disp_clear();
+    void add_hour();
+    void add_min();
     void check_brightness();
     void set_brightness(int br);
     void leds_on();
