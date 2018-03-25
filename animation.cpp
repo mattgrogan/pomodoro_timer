@@ -8,6 +8,44 @@
 #include "Arduino.h"
 #include "animation.h"
 
+DisplayData::DisplayData() {
+  
+}
+
+DisplayData::DisplayData(uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, bool c = false) {
+  digit_0 = d0;
+  digit_1 = d1;
+  digit_2 = d2;
+  digit_3 = d3;
+  colon = c;
+  
+}
+
+/*************************************
+ * Animation
+ *************************************/
+
+void Animation::reset() {
+  // Do nothing
+}
+
+void Animation::next() {
+  // Do nothing
+}
+
+void Animation::end() {
+  // Do nothing
+}
+
+bool Animation::is_done() {
+  return true;
+}
+
+DisplayData NullAnimation::mask(DisplayData d) {
+  // Return the original display data
+  return d;
+}
+
 // TODO: Need to fix animation so that it counts up the digits
 // instead of counting down. Logic is hard to understand now...
 

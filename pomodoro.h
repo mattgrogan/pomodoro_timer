@@ -125,7 +125,7 @@ class Pomodoro {
     State_SetHour _state_sethour;
     State_SetMin _state_setmin;
   public:
-    Display disp;
+    AnimatedDisplay disp;
     Clock clock = Clock();
     Timer timer;
     Pomodoro();

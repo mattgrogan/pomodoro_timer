@@ -23,6 +23,37 @@
 #define MID   SEG_A | SEG_G | SEG_D
 #define LEFT  SEG_F | SEG_E
 
+#define NULL_ANIMATION 0
+#define COLON_BLINK_ANIM 1
+#define HOUR_BLINK_ANIM 2
+#define MIN_BLINK_ANIM 3
+#define SWIPE_IN_ANIM 4
+
+class DisplayData {
+  public:
+    DisplayData();
+    DisplayData(uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, bool c = false);
+    uint8_t digit_0 = 0x00;
+    uint8_t digit_1 = 0x00;
+    uint8_t digit_2 = 0x00;
+    uint8_t digit_3 = 0x00;
+    bool colon = true; 
+};
+
+class Animation {
+  public:
+    void reset();
+    void next();
+    void end();
+    bool is_done();
+    virtual DisplayData mask(DisplayData);
+};
+
+class NullAnimation : public Animation {
+  public:
+    DisplayData mask(DisplayData);
+};
+
 class Pattern {
   private:
     uint8_t * _steps;
