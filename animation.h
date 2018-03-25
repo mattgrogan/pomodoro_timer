@@ -11,6 +11,7 @@
 #import "interval.h"
 
 #define SET_TIME_BLINK_INTERVAL 200
+const int ANIMATION_SPEED = 20;
 
 #define SEGMENT_LENGTH 4
 
@@ -85,6 +86,9 @@ class MinBlinkAnimation : public Animation {
     DisplayData mask(DisplayData);  
 };
 
+
+
+
 class Pattern {
   private:
     uint8_t * _steps;
@@ -115,6 +119,19 @@ class MatrixPattern {
     bool is_done();
     uint8_t mask(uint8_t digit, uint8_t bitmap);
     uint8_t digit();
+};
+
+class SwipeInAnimation : public Animation {
+  // Swipe from right to left
+  private:
+    MatrixPattern _mp;
+    Interval _mp_interval = Interval(ANIMATION_SPEED);
+    static const uint8_t n_steps = 3;
+    uint8_t steps[n_steps] = {RIGHT, MID, LEFT};
+  public:
+    SwipeInAnimation();
+    void reset();
+    DisplayData mask(DisplayData);
 };
 
 #endif

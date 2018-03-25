@@ -35,7 +35,7 @@ class AnimatedDisplay : public SevenSegDisplay {
     ColonAnimation        _colon_blink;
     HourBlinkAnimation    _hour_blink;
     MinBlinkAnimation     _min_blink;
-    NullAnimation     _swipe_in;
+    SwipeInAnimation      _swipe_in;
   public:
     void set_animation(uint8_t a);
     void write(DisplayData);

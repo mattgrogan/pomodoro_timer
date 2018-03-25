@@ -65,12 +65,15 @@ void AnimatedDisplay::set_animation(uint8_t a) {
       _current_animation = &_min_blink;
       break;
     case SWIPE_IN_ANIM:
+      // Hack due to c++ overload calls parent type, so reset is not being called
+      // on the swipe in animation.
+      _swipe_in.reset();
       _current_animation = &_swipe_in;
       break;
   }
 
   // Reset the animation
-  _current_animation->reset();
+  //_current_animation->reset();
 }
 
 void AnimatedDisplay::write(DisplayData d) {

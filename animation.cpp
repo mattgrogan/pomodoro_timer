@@ -79,6 +79,8 @@ DisplayData MinBlinkAnimation::mask(DisplayData d) {
   return DisplayData(d.digit_0, d.digit_1, d2, d3, d.colon);
 }
 
+
+
 // TODO: Need to fix animation so that it counts up the digits
 // instead of counting down. Logic is hard to understand now...
 
@@ -173,4 +175,28 @@ uint8_t MatrixPattern::digit() {
   return _index;
 }
 
+SwipeInAnimation::SwipeInAnimation() {
+  _mp.set_pattern(steps, n_steps);
+}
+
+DisplayData SwipeInAnimation::mask(DisplayData d) {
+
+  // Mask only if the animation is not completed
+  uint8_t d0 = _mp.is_done() ? d.digit_0 : _mp.mask(0, d.digit_0);
+  uint8_t d1 = _mp.is_done() ? d.digit_1 : _mp.mask(1, d.digit_1);
+  uint8_t d2 = _mp.is_done() ? d.digit_2 : _mp.mask(2, d.digit_2);
+  uint8_t d3 = _mp.is_done() ? d.digit_3 : _mp.mask(3, d.digit_3);
+
+  bool c = (_mp.digit() < 2 || _mp.is_done()) && d.colon;
+
+  if (_mp_interval.ready() && !_mp.is_done()) {
+    _mp.next();
+  }
+
+  return DisplayData(d0, d1, d2, d3, c);
+}
+
+void SwipeInAnimation::reset() {
+  _mp.first();
+}
 

@@ -428,7 +428,7 @@ void State_Temp::proximity_toggle(Pomodoro *p, bool state) {
   if (state) {
     p->disp.set_animation(SWIPE_IN_ANIM);
   } else {
-    p->disp.end();
+    p->disp.set_animation(NULL_ANIMATION);
   }
 }
 
@@ -461,7 +461,7 @@ void State_Clock::proximity_toggle(Pomodoro *p, bool state) {
   if (state) {
     p->disp.set_animation(SWIPE_IN_ANIM);
   } else {
-    p->disp.end();
+    p->disp.set_animation(COLON_BLINK_ANIM);
   }
 }
 
