@@ -64,6 +64,9 @@ void AnimatedDisplay::set_animation(uint8_t a) {
     case MIN_BLINK_ANIM:
       _current_animation = &_min_blink;
       break;
+    case SWIPE_IN_ANIM:
+      _current_animation = &_swipe_in;
+      break;
   }
 
   // Reset the animation
