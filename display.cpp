@@ -69,25 +69,17 @@ void Display::set_pattern() {
   _mp.set_pattern(steps, n_steps);
 }
 
+void Display::clear() {
+  _m.clear();
+  _m.writeDisplay();
+}
+
 
 /****************************************
  * 
  */
 
-
-void Display::writeDigitRaw(uint8_t n, uint16_t bitmask) {
-  _m.writeDigitRaw(n, bitmask);
-}
-
 void Display::drawColon(boolean state) {
   _m.drawColon(state);
-}
-
-void Display::writeDisplay() {
-  _m.writeDisplay();
-}
-
-void Display::clear() {
-  _m.clear();
 }
 

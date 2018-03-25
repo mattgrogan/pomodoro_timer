@@ -220,7 +220,6 @@ void Pomodoro::disp_temp() {
 
 void Pomodoro::disp_clear() {
   disp.clear();
-  disp.writeDisplay();
 }
 
 void Pomodoro::check_brightness() {
@@ -319,7 +318,6 @@ void Pomodoro::test(uint16_t duration_ms) {
   
   leds_off();
   disp.clear();
-  disp.writeDisplay();
 }
 
 /*************************************

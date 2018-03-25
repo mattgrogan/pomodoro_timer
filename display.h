@@ -30,12 +30,10 @@ class Display {
     void end_animation();
     void reset_animation();
     void set_pattern();
+    void clear();
 
     // These are for refactor only. They delegate to the Adafruit 7Segment object
-    void writeDigitRaw(uint8_t n, uint16_t bitmask);
     void drawColon(boolean state);
-    void writeDisplay();
-    void clear();
 };
 
 
