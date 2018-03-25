@@ -98,10 +98,6 @@ class State_SetHour : public State {
 
 class Pomodoro {
   private:
-    
-    Interval _colon_interval = Interval(1000);
-    bool _colon_on = true;
-    
     int _temp_f;
     int _sequence[POMODORO_STEPS] = {
                         ACTIVE_SECS, BREAK_SECS,

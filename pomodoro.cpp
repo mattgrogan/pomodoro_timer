@@ -67,7 +67,7 @@ uint16_t decimal[10] = {
  *************************************/
 
 Pomodoro::Pomodoro() {
-  _current_state = &_state_clock;
+  set_state(STATE_CLOCK);
 }
 
 void Pomodoro::disp_begin(int matrix_addr) {
@@ -127,24 +127,31 @@ void Pomodoro::set_state(int state) {
   switch(state) {
     case STATE_OFF:
       _current_state = &_state_off;
+      disp.set_animation(NULL_ANIMATION);
       break;
     case STATE_READY:
       _current_state = &_state_ready;
+      disp.set_animation(NULL_ANIMATION);
       break;
     case STATE_ACTIVE:
       _current_state = &_state_active;
+      disp.set_animation(NULL_ANIMATION);
       break;
     case STATE_TEMP:
       _current_state = &_state_temp;
+      disp.set_animation(NULL_ANIMATION);
       break;
     case STATE_CLOCK:
       _current_state = &_state_clock;
+      disp.set_animation(COLON_BLINK_ANIM);
       break;
     case STATE_SETHOUR:
       _current_state = &_state_sethour;
+      disp.set_animation(NULL_ANIMATION);
       break;
     case STATE_SETMIN:
       _current_state = &_state_setmin;
+      disp.set_animation(NULL_ANIMATION);
   }
 }
 
@@ -197,6 +204,10 @@ void Pomodoro::disp_clock() {
     hour -= 12;
   }
 
+  if (hour == 0) {
+    hour = 12;
+  }
+
   uint8_t digits[SEGMENT_LENGTH] = { 0 };
 
   digits[0] = decimal[(hour / 10)];
@@ -208,7 +219,7 @@ void Pomodoro::disp_clock() {
     digits[0] = 0x00; // Trim leading zero
   }
 
-  DisplayData d = DisplayData(digits[0], digits[1], digits[2], digits[3], _colon_on);
+  DisplayData d = DisplayData(digits[0], digits[1], digits[2], digits[3], true);
 
   disp.write(d);
 }
@@ -261,11 +272,6 @@ void Pomodoro::update() {
   proximity_status(prox.near());
 
   check_brightness();
-
-  // Colon blinks every second
-  if (_colon_interval.ready()) {
-    _colon_on = !_colon_on;
-  }
 
   // Run the update
   _current_state->update(this);

@@ -46,6 +46,16 @@ DisplayData NullAnimation::mask(DisplayData d) {
   return d;
 }
 
+DisplayData ColonAnimation::mask(DisplayData d) {
+  // Colon blinks every second
+  if (_colon_interval.ready()) {
+    _colon_on = !_colon_on;
+  }
+
+  return DisplayData(d.digit_0, d.digit_1, d.digit_2, d.digit_3, _colon_on);
+}
+
+
 // TODO: Need to fix animation so that it counts up the digits
 // instead of counting down. Logic is hard to understand now...
 

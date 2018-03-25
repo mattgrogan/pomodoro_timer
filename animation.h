@@ -8,6 +8,8 @@
 #ifndef animation_h
 #define animation_h
 
+#import "interval.h"
+
 #define SEGMENT_LENGTH 4
 
 #define SEG_A 0x01
@@ -53,6 +55,16 @@ class NullAnimation : public Animation {
   public:
     DisplayData mask(DisplayData);
 };
+
+class ColonAnimation : public Animation {
+  // Blink the colon every one seconds
+  private:
+    Interval _colon_interval = Interval(1000);
+    bool _colon_on = true;
+  public:
+    DisplayData mask(DisplayData);
+};
+
 
 class Pattern {
   private:
