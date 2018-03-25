@@ -147,11 +147,11 @@ void Pomodoro::set_state(int state) {
       break;
     case STATE_SETHOUR:
       _current_state = &_state_sethour;
-      disp.set_animation(NULL_ANIMATION);
+      disp.set_animation(HOUR_BLINK_ANIM);
       break;
     case STATE_SETMIN:
       _current_state = &_state_setmin;
-      disp.set_animation(NULL_ANIMATION);
+      disp.set_animation(MIN_BLINK_ANIM);
   }
 }
 

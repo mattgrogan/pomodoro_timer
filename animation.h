@@ -10,6 +10,8 @@
 
 #import "interval.h"
 
+#define SET_TIME_BLINK_INTERVAL 200
+
 #define SEGMENT_LENGTH 4
 
 #define SEG_A 0x01
@@ -65,6 +67,23 @@ class ColonAnimation : public Animation {
     DisplayData mask(DisplayData);
 };
 
+class HourBlinkAnimation : public Animation {
+  // Blink the hour
+  private:
+    Interval _blink_interval = Interval(SET_TIME_BLINK_INTERVAL);
+    bool _blink_on = true;
+  public:
+    DisplayData mask(DisplayData);
+};
+
+class MinBlinkAnimation : public Animation {
+  // Blink the minute
+  private:
+    Interval _blink_interval = Interval(SET_TIME_BLINK_INTERVAL);
+    bool _blink_on = true;
+  public:
+    DisplayData mask(DisplayData);  
+};
 
 class Pattern {
   private:

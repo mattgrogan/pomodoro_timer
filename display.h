@@ -30,11 +30,11 @@ class SevenSegDisplay {
 
 class AnimatedDisplay : public SevenSegDisplay {
   private:
-    Animation       *_current_animation;
-    NullAnimation   _null_anim;
-    ColonAnimation  _colon_blink;
-    NullAnimation   _hour_blink;
-    NullAnimation _min_blink;
+    Animation             *_current_animation;
+    NullAnimation         _null_anim;
+    ColonAnimation        _colon_blink;
+    HourBlinkAnimation    _hour_blink;
+    MinBlinkAnimation     _min_blink;
     NullAnimation     _swipe_in;
   public:
     void set_animation(uint8_t a);

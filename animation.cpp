@@ -55,6 +55,29 @@ DisplayData ColonAnimation::mask(DisplayData d) {
   return DisplayData(d.digit_0, d.digit_1, d.digit_2, d.digit_3, _colon_on);
 }
 
+DisplayData HourBlinkAnimation::mask(DisplayData d) {
+  // Blink the hours
+  if (_blink_interval.ready()) {
+    _blink_on = !_blink_on;
+  }
+
+  uint8_t d0 = _blink_on ? d.digit_0 : 0x00;
+  uint8_t d1 = _blink_on ? d.digit_1 : 0x00;
+
+  return DisplayData(d0, d1, d.digit_2, d.digit_3, d.colon);
+}
+
+DisplayData MinBlinkAnimation::mask(DisplayData d) {
+  // Blink the minutes
+  if (_blink_interval.ready()) {
+    _blink_on = !_blink_on;
+  }
+
+  uint8_t d2 = _blink_on ? d.digit_2 : 0x00;
+  uint8_t d3 = _blink_on ? d.digit_3 : 0x00;
+
+  return DisplayData(d.digit_0, d.digit_1, d2, d3, d.colon);
+}
 
 // TODO: Need to fix animation so that it counts up the digits
 // instead of counting down. Logic is hard to understand now...
