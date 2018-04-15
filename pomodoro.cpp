@@ -42,6 +42,134 @@ void play_charge() {
   play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
 }
 
+void play_spin() {
+  int slot[] = {
+    NOTE_C4, NOTE_G4, NOTE_C4, NOTE_G4, 
+    NOTE_C4, NOTE_G4, NOTE_C4, NOTE_G4,
+    NOTE_C5, NOTE_G4, NOTE_C5, NOTE_C4, 
+    
+    NOTE_C5, NOTE_E5, NOTE_C5, NOTE_E5,
+    NOTE_C4, NOTE_G4, NOTE_C5, NOTE_G4,
+    NOTE_C4, NOTE_G4, NOTE_C5, NOTE_G4,
+    NOTE_C4,
+    END
+  };
+
+  int slotd[] = {
+    4, 4, 4, 4,
+    4, 4, 4, 8,
+    4, 8, 4, 4,
+    
+    4, 4, 4, 4,
+    4, 4, 4, 8,
+    4, 8, 4, 4,
+    16
+  };
+
+  int *notes = slot;
+  int *durations = slotd;
+  
+  play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
+}
+
+void play_merry_go_round() {
+  // The Merry-Go-Round Broke Down
+  //http://www.musicnotes.com/sheetmusic/mtd.asp?ppn=MN0016282
+
+ int mgr[] = {
+  
+    NOTE_E4, NOTE_E4,
+    NOTE_C5, NOTE_C5, NOTE_B5, NOTE_A5, NOTE_F4,
+    NOTE_E4, NOTE_G4,
+    
+    NOTE_C5, NOTE_B5, NOTE_A5, NOTE_AS5,
+    NOTE_B5, NOTE_B5,
+    NOTE_B5, NOTE_E4, NOTE_A5, NOTE_E4,
+  
+    NOTE_B5, NOTE_G4, NOTE_F4, NOTE_E4, NOTE_E4,
+    NOTE_G4, NOTE_G4, NOTE_D4, NOTE_F4, NOTE_E4,
+  
+    NOTE_C4, NOTE_E4, NOTE_E4,
+    NOTE_C4, NOTE_E4, NOTE_E4,
+    NOTE_C4, NOTE_E4, NOTE_C4, NOTE_E4,
+    END
+  };
+  
+  int mgrd[] = {
+    4, 4,
+    4, 4, 8, 8, 8,
+    24, 8,
+  
+    8, 8, 8, 8,
+    24, 8,
+    8, 8, 8, 8,
+  
+    8, 8, 8, 4, 4,
+    4, 4, 8, 8, 8,
+    
+    8, 8, 16,
+    8, 8, 16,
+    8, 8, 8, 8,
+  };
+
+  int *notes = mgr;
+  int *durations = mgrd;
+  int music_speed = 40;
+  
+  play(SPEAKER_PIN, notes, durations, music_speed);
+}
+
+void play_first_call() {
+  // https://en.wikipedia.org/wiki/First_call
+  int fc[] = {
+    NOTE_G4, NOTE_C5, NOTE_E5, 
+    NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5,
+    NOTE_E5, NOTE_E5, NOTE_E5, NOTE_E5, NOTE_E5,
+    NOTE_C5, NOTE_E5, NOTE_C5,
+    
+    NOTE_G4, 0, NOTE_G4, NOTE_C5, NOTE_E5,
+    NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5, NOTE_G5,
+    NOTE_G5, NOTE_E5, NOTE_C5,
+    NOTE_G4, NOTE_G4, NOTE_G4, NOTE_G4, NOTE_G4,
+    NOTE_C5,
+   
+    END
+  };
+  int fcd[] = {
+    2, 2, 2,
+    6, 2, 2, 2, 6,
+    6, 2, 2, 2, 6,
+    6, 6, 6,
+  
+    4, 4, 2, 2, 2,
+    6, 2, 2, 2, 6,
+    6, 6, 6,
+    6, 2, 2, 2, 6,
+    4
+    
+  };
+
+  int *notes = fc;
+  int *durations = fcd;
+  
+  play(SPEAKER_PIN, notes, durations, MUSIC_SPEED);
+}
+
+void play_random() {
+  // Play a random song
+  long r = random(4);
+
+  if (r < 1) {
+    play_charge();
+  } else if (r < 2) {
+    play_spin();
+  } else if (r < 3) {
+    play_merry_go_round();
+  } else {
+    play_first_call();
+  }
+}
+
 /*************************************
  * Variables for animation
  *************************************/
@@ -404,7 +532,7 @@ void State_Active::update(Pomodoro *p) {
     Serial.println("Timer expired.");
     p->set_timer();
     p->leds_on();
-    play_charge();
+    play_random();
     p->disp.reset();  
     p->set_state(STATE_READY);
   }

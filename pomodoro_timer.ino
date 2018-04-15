@@ -67,6 +67,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting Pomodoro Timer...");
 
+  randomSeed(analogRead(0));
+
   // Setup button 1
   pinMode(BTN_1_PIN, INPUT_PULLUP);
   btn_1_db.attach(BTN_1_PIN);
