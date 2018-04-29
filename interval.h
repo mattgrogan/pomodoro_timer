@@ -16,6 +16,9 @@ class Interval {
     Interval(int interval_ms) {
       _interval_ms = interval_ms;
     }
+    void reset() {
+      _last = millis();
+    }
     bool ready() {
       // Has the interval passed since the last measurement
       bool result = false;

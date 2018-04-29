@@ -36,7 +36,7 @@ const int WARNING_SECS = 2 * 60;
 
 Adafruit_BME280 bme;
 
-const int TEMP_TIMEOUT_SECS = 1;
+const int TEMP_TIMEOUT_SECS = 60;
 
 Bounce btn_1_db = Bounce();
 Bounce btn_2_db = Bounce();

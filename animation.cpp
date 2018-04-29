@@ -197,6 +197,7 @@ DisplayData SwipeInAnimation::mask(DisplayData d) {
 }
 
 void SwipeInAnimation::reset() {
+  _mp_interval.reset();
   _mp.first();
 }
 
