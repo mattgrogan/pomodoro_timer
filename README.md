@@ -4,4 +4,4 @@ From Wikipedia, the free encyclopedia
 >
 > https://en.wikipedia.org/wiki/Pomodoro_Technique
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/EmQLqyXR2Ug" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+[![Pomodoro Video](http://img.youtube.com/vi/EmQLqyXR2Ug/0.jpg)](http://www.youtube.com/watch?v=EmQLqyXR2Ug)
